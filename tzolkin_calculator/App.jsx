@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Save, TrendingUp } from 'lucide-react';
+const { useState, useEffect } = React;
 
 const TzolkinTracker = () => {
   const [todayKin, setTodayKin] = useState(null);
@@ -195,7 +194,7 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
           onClick={() => setShowDetails(!showDetails)}
           className="mt-4 text-purple-400 flex items-center gap-2 text-sm hover:text-purple-300"
         >
-          {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          {showDetails ? '▲' : '▼'}
           {showDetails ? 'Скрыть детали' : 'Показать детали'}
         </button>
 
@@ -255,8 +254,7 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
           onClick={saveAnswers}
           className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
         >
-          <Save size={20} />
-          Сохранить день
+          💾 Сохранить день
         </button>
       </div>
 
@@ -268,10 +266,9 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
             className="w-full flex items-center justify-between text-blue-300 font-bold text-lg"
           >
             <span className="flex items-center gap-2">
-              <TrendingUp size={24} />
-              Анализ паттерна
+              📊 Анализ паттерна
             </span>
-            {showAnalysis ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            {showAnalysis ? '▲' : '▼'}
           </button>
 
           {showAnalysis && (
@@ -289,4 +286,5 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
   );
 };
 
-export default TzolkinTracker;
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<TzolkinTracker />);
