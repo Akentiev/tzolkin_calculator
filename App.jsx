@@ -30,6 +30,11 @@ const TzolkinTracker = () => {
     notes: ''
   });
 
+  const [dayAdvice, setDayAdvice] = useState('');
+  const [waveAnalysis, setWaveAnalysis] = useState('');
+  const [loadingDay, setLoadingDay] = useState(false);
+  const [loadingWave, setLoadingWave] = useState(false);
+
   const seals = [
     { name: 'Красный Дракон', essence: 'Рождение, питание, изначальная энергия', element: 'Огонь', color: '#DC2626' },
     { name: 'Белый Ветер', essence: 'Дух, дыхание, коммуникация', element: 'Воздух', color: '#F3F4F6' },
@@ -164,6 +169,58 @@ const TzolkinTracker = () => {
     }
   };
 
+  const analyzeDayWithClaude = async () => {
+    setLoadingDay(true);
+    try {
+      const response = await fetch('/api/analyze-day', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          dayData: {
+            tone: todayKin.tone,
+            seal: seals[todayKin.seal].name,
+            ...todayAnswers
+          }
+        })
+      });
+      
+      const data = await response.json();
+      setDayAdvice(data.advice);
+    } catch (e) {
+      alert('Ошибка анализа: ' + e.message);
+    }
+    setLoadingDay(false);
+  };
+
+  const analyzeWaveWithClaude = async () => {
+    const entries = Object.entries(waveData).filter(([_, v]) => v.energy);
+    if (entries.length < 13) {
+      alert('Нужно заполнить все 13 дней');
+      return;
+    }
+    
+    setLoadingWave(true);
+    try {
+      const response = await fetch('/api/analyze-wave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          waveDays: entries.map(([date, data]) => ({
+            date,
+            tone: data.tone,
+            ...data
+          }))
+        })
+      });
+      
+      const data = await response.json();
+      setWaveAnalysis(data.analysis);
+    } catch (e) {
+      alert('Ошибка анализа: ' + e.message);
+    }
+    setLoadingWave(false);
+  };
+
   const analyzePattern = () => {
     const entries = Object.entries(waveData).filter(([_, v]) => v.energy);
     if (entries.length < 5) {
@@ -292,6 +349,23 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
         >
           💾 Сохранить день
         </button>
+
+        {/* Анализ дня AI */}
+        <div className="mt-6 p-4 bg-blue-900/30 rounded-xl border border-blue-500/30">
+          <button
+            onClick={analyzeDayWithClaude}
+            disabled={!todayAnswers.energy || loadingDay}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg mb-3"
+          >
+            {loadingDay ? '⏳ Анализирую...' : '🤖 Совет AI на сегодня'}
+          </button>
+          
+          {dayAdvice && (
+            <div className="p-4 bg-blue-500/20 rounded-lg text-sm text-gray-200">
+              {dayAdvice}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Анализ */}
@@ -310,6 +384,20 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
           {showAnalysis && (
             <div className="mt-4 text-sm text-gray-300 whitespace-pre-line bg-gray-900/50 p-4 rounded-lg">
               {analyzePattern()}
+            </div>
+          )}
+
+          <button
+            onClick={analyzeWaveWithClaude}
+            disabled={Object.keys(waveData).length < 13 || loadingWave}
+            className="mt-4 w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg"
+          >
+            {loadingWave ? '⏳ Анализирую волну...' : '🔮 Анализ волны от AI'}
+          </button>
+
+          {waveAnalysis && (
+            <div className="mt-4 p-4 bg-purple-500/20 rounded-lg text-sm text-gray-200 whitespace-pre-line">
+              {waveAnalysis}
             </div>
           )}
         </div>
