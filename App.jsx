@@ -1,5 +1,21 @@
 const { useState, useEffect } = React;
 
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+  'https://riuqfxredmzrglegfmxd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpdXFmeHJlZG16cmdsZWdmbXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MjI3OTIsImV4cCI6MjA4MjM5ODc5Mn0.680PpZjhfZdeK4o2KS_bY3HDHezsc7k8gncUXwwshaU'
+);
+
+const getUserId = () => {
+  let id = localStorage.getItem('user_id');
+  if (!id) {
+    id = 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('user_id', id);
+  }
+  return id;
+};
+
 const TzolkinTracker = () => {
   const [todayKin, setTodayKin] = useState(null);
   const [waveData, setWaveData] = useState({});
@@ -94,16 +110,26 @@ const TzolkinTracker = () => {
     
     const loadData = async () => {
       try {
-        const result = await window.storage.get('tzolkin_wave');
-        if (result && result.value) {
-          const parsed = JSON.parse(result.value);
-          setWaveData(parsed);
-          if (parsed[today]) {
-            setTodayAnswers(parsed[today]);
-          }
+        const userId = getUserId();
+        const { data, error } = await supabaseClient
+          .from('user_days')
+          .select('*')
+          .eq('user_id', userId)
+          .order('date', { ascending: false });
+        
+        if (error) throw error;
+        
+        const waveObj = {};
+        data.forEach(row => {
+          waveObj[row.date] = row;
+        });
+        setWaveData(waveObj);
+        
+        if (waveObj[today]) {
+          setTodayAnswers(waveObj[today]);
         }
       } catch (e) {
-        console.log('Нет сохранённых данных');
+        console.log('Ошибка загрузки:', e);
       }
     };
     
@@ -111,17 +137,27 @@ const TzolkinTracker = () => {
   }, []);
 
   const saveAnswers = async () => {
-    console.log('Сохранение начато...');
     const today = new Date().toISOString().split('T')[0];
-    const updated = { ...waveData, [today]: { ...todayAnswers, tone: todayKin.tone, date: today } };
+    const userId = getUserId();
     
-    console.log('Данные для сохранения:', updated);
+    const dataToSave = {
+      user_id: userId,
+      date: today,
+      kin: todayKin.kin,
+      tone: todayKin.tone,
+      seal: todayKin.seal,
+      ...todayAnswers
+    };
     
     try {
-      const result = await window.storage.set('tzolkin_wave', JSON.stringify(updated), false);
-      console.log('Результат сохранения:', result);
-      setWaveData(updated);
-      alert('✓ Сохранено! День ' + today);
+      const { error } = await supabaseClient
+        .from('user_days')
+        .upsert(dataToSave, { onConflict: 'user_id,date' });
+      
+      if (error) throw error;
+      
+      setWaveData({ ...waveData, [today]: dataToSave });
+      alert('✓ Сохранено!');
     } catch (e) {
       console.error('Ошибка:', e);
       alert('❌ Ошибка: ' + e.message);
