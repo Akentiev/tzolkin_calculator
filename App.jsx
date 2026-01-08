@@ -28,10 +28,8 @@ const calculateKin = (dateStr) => {
 };
 
 const TzolkinTracker = () => {
-  const [todayKin, setTodayKin] = useState(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return calculateKin(today);
-  });
+  const [today] = useState(() => new Date().toISOString().split('T')[0]);
+  const [todayKin, setTodayKin] = useState(() => calculateKin(today));
   const [waveData, setWaveData] = useState({});
   const [showDetails, setShowDetails] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('home');
@@ -251,6 +249,7 @@ const TzolkinTracker = () => {
     switch (currentScreen) {
       case 'wave':
         return <CurrentWave
+          today={today}
           todayKin={todayKin}
           seals={seals}
           tones={tones}

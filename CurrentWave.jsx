@@ -1,17 +1,18 @@
 const { useState } = React;
 
-const CurrentWave = ({ todayKin, seals, tones, currentWaveOffset, setCurrentWaveOffset, waveData }) => {
+const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurrentWaveOffset, waveData }) => {
   const seal = seals[todayKin.seal];
   const tone = tones[todayKin.tone - 1];
 
   // Получить данные текущей волны
   const getCurrentWave = () => {
     try {
-      const today = new Date();
+      // Используем переданный 'today' для синхронизации с домашним экраном
+      const todayDate = new Date(today + 'T00:00:00');
       // Рассчитываем начало волны: текущая волна начинается 12 дней назад
       // Каждая предыдущая волна на 13 дней раньше
       const totalDaysBack = 12 + (Math.max(0, -currentWaveOffset) * 13);
-      const waveStartDate = new Date(today);
+      const waveStartDate = new Date(todayDate);
       waveStartDate.setDate(waveStartDate.getDate() - totalDaysBack);
 
       // Форматируем дату начала волны
@@ -149,7 +150,6 @@ const CurrentWave = ({ todayKin, seals, tones, currentWaveOffset, setCurrentWave
     };
 
     // Проверить, является ли день сегодняшним
-    const today = new Date().toISOString().split('T')[0];
     const isToday = day.date === today;
 
     return (
