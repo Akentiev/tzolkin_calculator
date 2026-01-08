@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         max_tokens: 500,
         messages: [{
           role: 'user',
-          content: `Ты эксперт по календарю Tzolkin. Проанализируй день пользователя и дай краткую рекомендацию (2-3 предложения).
+          content: `Ты эксперт по календарю Tzolkin. Проанализируй день пользователя и дай краткую рекомендацию (3-4 предложения).
 
 Данные дня:
 - Тон: ${dayData.tone}

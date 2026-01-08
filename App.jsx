@@ -16,12 +16,26 @@ const getUserId = () => {
   return id;
 };
 
+const calculateKin = (dateStr) => {
+  const date = new Date(dateStr);
+  const baseDate = new Date('1982-03-05');
+  const baseKin = 22;
+  const daysDiff = Math.floor((date - baseDate) / (1000 * 60 * 60 * 24));
+  const kin = ((baseKin + daysDiff - 1) % 260) + 1;
+  const tone = ((kin - 1) % 13) + 1;
+  const seal = ((kin - 1) % 20);
+  return { kin, tone, seal };
+};
+
 const TzolkinTracker = () => {
-  const [todayKin, setTodayKin] = useState(null);
+  const [todayKin, setTodayKin] = useState(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return calculateKin(today);
+  });
   const [waveData, setWaveData] = useState({});
   const [showDetails, setShowDetails] = useState(false);
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('home');
+  const [currentWaveOffset, setCurrentWaveOffset] = useState(0);
   const [todayAnswers, setTodayAnswers] = useState({
     energy: null,
     resonance: null,
@@ -96,17 +110,6 @@ const TzolkinTracker = () => {
       q: '5. Ключевое событие',
       options: ['Прорыв', 'Знак', 'Синхрония', 'Вызов', 'Тупик', 'Обычный день']
     }
-  };
-
-  const calculateKin = (dateStr) => {
-    const date = new Date(dateStr);
-    const baseDate = new Date('1982-03-05');
-    const baseKin = 22;
-    const daysDiff = Math.floor((date - baseDate) / (1000 * 60 * 60 * 24));
-    const kin = ((baseKin + daysDiff - 1) % 260) + 1;
-    const tone = ((kin - 1) % 13) + 1;
-    const seal = ((kin - 1) % 20);
-    return { kin, tone, seal };
   };
 
   useEffect(() => {
@@ -222,302 +225,101 @@ const TzolkinTracker = () => {
     setLoadingWave(false);
   };
 
-  const analyzePattern = () => {
-    const entries = Object.entries(waveData).filter(([_, v]) => v.energy);
-    if (entries.length < 5) {
-      return 'Недостаточно данных. Заполните минимум 5 дней для анализа паттерна.';
+  const updateDay = async (date, field, value) => {
+    const updatedData = { ...waveData };
+    if (!updatedData[date]) {
+      updatedData[date] = { user_id: getUserId(), date };
     }
-
-    const energyByTone = {};
-    const actionByTone = {};
+    updatedData[date][field] = value;
     
-    entries.forEach(([date, data]) => {
-      const t = data.tone;
-      if (!energyByTone[t]) energyByTone[t] = [];
-      if (!actionByTone[t]) actionByTone[t] = [];
-      energyByTone[t].push(data.energy);
-      actionByTone[t].push(data.action);
-    });
-
-    const highEnergyTones = Object.entries(energyByTone)
-      .filter(([_, vals]) => vals.some(v => ['Высокая', 'Подъём'].includes(v)))
-      .map(([t]) => `Тон ${t}`);
-
-    const lowEnergyTones = Object.entries(energyByTone)
-      .filter(([_, vals]) => vals.some(v => ['Низкая', 'Апатия', 'Спад'].includes(v)))
-      .map(([t]) => `Тон ${t}`);
-
-    return `
-📊 Ваш паттерн за ${entries.length} дней:
-
-⚡ Высокая энергия: ${highEnergyTones.join(', ') || 'не выявлено'}
-📉 Низкая энергия: ${lowEnergyTones.join(', ') || 'не выявлено'}
-
-${entries.length >= 13 ? '✓ Полная волна пройдена! Паттерн виден чётко.' : `⏳ Осталось ${13 - entries.length} дней до полной волны.`}
-    `.trim();
+    try {
+      const { error } = await supabaseClient
+        .from('user_days')
+        .upsert(updatedData[date], { onConflict: 'user_id,date' });
+      
+      if (error) throw error;
+      
+      setWaveData(updatedData);
+    } catch (e) {
+      console.error('Ошибка сохранения:', e);
+    }
   };
 
   if (!todayKin) return null;
 
-  if (showTutorial) {
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'wave':
+        return <CurrentWave
+          todayKin={todayKin}
+          seals={seals}
+          tones={tones}
+          questions={questions}
+          waveData={waveData}
+          todayAnswers={todayAnswers}
+          setTodayAnswers={setTodayAnswers}
+          saveAnswers={saveAnswers}
+          analyzeDayWithClaude={analyzeDayWithClaude}
+          dayAdvice={dayAdvice}
+          loadingDay={loadingDay}
+          currentWaveOffset={currentWaveOffset}
+          setCurrentWaveOffset={setCurrentWaveOffset}
+          updateDay={updateDay}
+        />;
+      case 'history':
+        return <WaveHistoryScreen 
+          waveData={waveData} 
+          setShowWaveHistory={() => {}} 
+          setCurrentWaveOffset={setCurrentWaveOffset}
+          setCurrentScreen={setCurrentScreen}
+        />;
+      default:
+        return (
+          <div>
+            {/* Навигация */}
+            <div className="max-w-2xl mx-auto mb-4 flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-purple-300">Tzolk'in Tracker</h1>
+              <button
+                onClick={() => setCurrentScreen('tutorial')}
+                className="bg-gray-600 hover:bg-gray-700 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition"
+                title="Обучение"
+              >
+                ℹ️
+              </button>
+            </div>
+
+            <HomeScreen
+              todayKin={todayKin}
+              seals={seals}
+              tones={tones}
+              questions={questions}
+              waveData={waveData}
+              todayAnswers={todayAnswers}
+              setTodayAnswers={setTodayAnswers}
+              saveAnswers={saveAnswers}
+              analyzeDayWithClaude={analyzeDayWithClaude}
+              dayAdvice={dayAdvice}
+              loadingDay={loadingDay}
+              setCurrentScreen={setCurrentScreen}
+            />
+          </div>
+        );
+    }
+  };
+
+  if (currentScreen === 'tutorial') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-4">
-        <div className="max-w-2xl mx-auto">
-          
-          {/* Заголовок с кнопкой назад */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-purple-300">Обучение Tzolk'in</h1>
-            <button
-              onClick={() => setShowTutorial(false)}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
-              ← Назад
-            </button>
-          </div>
-          
-          {/* Введение */}
-          <div className="mb-6 p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-purple-500/30">
-            <h2 className="text-xl font-bold text-purple-300 mb-4">Что такое Tzolk'in?</h2>
-            <p className="text-gray-300 mb-4">
-              Tzolk'in (Цолькин) - это священный календарь майя, основанный на 260-дневном цикле. 
-              Он состоит из 20 печатей (солнечных знаков) и 13 тонов (волновых гармоник).
-            </p>
-            <p className="text-gray-300">
-              Каждый день имеет уникальную комбинацию тона и печати, которая определяет энергию, 
-              возможности и уроки этого дня.
-            </p>
-          </div>
-          
-          {/* Печати */}
-          <div className="mb-6 p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-purple-500/30">
-            <h2 className="text-xl font-bold text-purple-300 mb-4">20 Печатей</h2>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              {seals.map((seal, index) => (
-                <div key={index} className="p-3 bg-gray-800/50 rounded-lg">
-                  <div className="font-medium" style={{ color: seal.color }}>{seal.name}</div>
-                  <div className="text-gray-400 text-xs">{seal.essence}</div>
-                  <div className="text-gray-500 text-xs">{seal.element}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Тоны */}
-          <div className="mb-6 p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-purple-500/30">
-            <h2 className="text-xl font-bold text-purple-300 mb-4">13 Тонов</h2>
-            <div className="space-y-2 text-sm">
-              {tones.map((tone) => (
-                <div key={tone.n} className="p-3 bg-gray-800/50 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Тон {tone.n} • {tone.name}</span>
-                    <span className="text-purple-300 text-xs">{tone.phase}</span>
-                  </div>
-                  <div className="text-gray-400 text-xs mt-1">{tone.essence}</div>
-                  <div className="text-gray-500 text-xs">{tone.action}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Как пользоваться приложением */}
-          <div className="mb-6 p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-purple-500/30">
-            <h2 className="text-xl font-bold text-purple-300 mb-4">Как пользоваться приложением</h2>
-            <div className="space-y-4 text-sm text-gray-300">
-              <div>
-                <h3 className="font-medium text-white mb-2">1. Ежедневное отслеживание</h3>
-                <p>Каждый день отвечайте на 5 вопросов о своей энергии, резонансе с печатью, активности, проектах и ключевых событиях.</p>
-              </div>
-              <div>
-                <h3 className="font-medium text-white mb-2">2. Анализ паттерна</h3>
-                <p>Через несколько дней приложение покажет ваш личный паттерн - в какие тоны у вас высокая энергия, а в какие низкая.</p>
-              </div>
-              <div>
-                <h3 className="font-medium text-white mb-2">3. AI советы</h3>
-                <p>Получайте персонализированные рекомендации на основе энергии дня и ваших ответов.</p>
-              </div>
-              <div>
-                <h3 className="font-medium text-white mb-2">4. Анализ полной волны</h3>
-                <p>После заполнения 13 дней получите глубокий анализ вашей волны от ИИ.</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Советы */}
-          <div className="p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-purple-500/30">
-            <h2 className="text-xl font-bold text-purple-300 mb-4">Полезные советы</h2>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li>• Отвечайте честно - это поможет увидеть реальный паттерн</li>
-              <li>• Заполняйте каждый день для точного анализа</li>
-              <li>• Читайте описания тонов и печатей для лучшего понимания</li>
-              <li>• Используйте заметки для ключевых событий дня</li>
-              <li>• Через 13 дней вы увидите полную картину своей волны</li>
-            </ul>
-          </div>
-          
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+        <TutorialScreen seals={seals} tones={tones} setShowTutorial={() => setCurrentScreen('home')} />
+        <BottomNavigation currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
       </div>
     );
   }
 
-  const seal = seals[todayKin.seal];
-  const tone = tones[todayKin.tone - 1];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-4">
-      
-      {/* Навигация */}
-      <div className="max-w-2xl mx-auto mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-purple-300">Tzolk'in Tracker</h1>
-        <button
-          onClick={() => setShowTutorial(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-        >
-          📚 Обучение
-        </button>
-      </div>
-      
-      {/* Сегодня */}
-      <div className="max-w-2xl mx-auto mb-6 p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-purple-500/30">
-        <div className="text-sm text-purple-300 mb-2">Сегодня • Кин {todayKin.kin}</div>
-        <div className="text-5xl font-bold mb-3" style={{ color: seal.color }}>
-          {todayKin.tone} {seal.name}
-        </div>
-        <div className="text-lg text-gray-300 mb-4">{seal.essence}</div>
-        
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="p-3 bg-purple-500/20 rounded-lg">
-            <div className="text-purple-300">Тон {tone.n} • {tone.name}</div>
-            <div className="text-gray-400">{tone.essence}</div>
-          </div>
-          <div className="p-3 bg-blue-500/20 rounded-lg">
-            <div className="text-blue-300">Фаза: {tone.phase}</div>
-            <div className="text-gray-400">{tone.action}</div>
-          </div>
-        </div>
-
-        <button 
-          onClick={() => setShowDetails(!showDetails)}
-          className="mt-4 text-purple-400 flex items-center gap-2 text-sm hover:text-purple-300"
-        >
-          {showDetails ? '▲' : '▼'}
-          {showDetails ? 'Скрыть детали' : 'Показать детали'}
-        </button>
-
-        {showDetails && (
-          <div className="mt-4 space-y-2 text-sm text-gray-400 border-t border-gray-700 pt-4">
-            <div><span className="text-purple-300">Стихия:</span> {seal.element}</div>
-            <div><span className="text-purple-300">Действие дня:</span> {tone.action}</div>
-            <div className="text-xs text-gray-500 mt-2">
-              Это {todayKin.tone}-й день текущей 13-дневной волны. 
-              {todayKin.tone <= 4 && ' Фаза посева и формирования.'}
-              {todayKin.tone >= 5 && todayKin.tone <= 7 && ' Фаза подъёма и пика силы.'}
-              {todayKin.tone >= 8 && todayKin.tone <= 9 && ' Фаза трансформации.'}
-              {todayKin.tone >= 10 && todayKin.tone <= 12 && ' Фаза интеграции.'}
-              {todayKin.tone === 13 && ' Завершение волны, кульминация.'}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Вопросы */}
-      <div className="max-w-2xl mx-auto mb-6 p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-purple-500/30">
-        <div className="text-xl font-bold mb-4 text-purple-300">Отследить день</div>
-        
-        {Object.entries(questions).map(([key, { q, options }]) => (
-          <div key={key} className="mb-4">
-            <div className="text-sm text-gray-400 mb-2">{q}</div>
-            <div className="grid grid-cols-3 gap-2">
-              {options.map(opt => (
-                <button
-                  key={opt}
-                  onClick={() => setTodayAnswers({ ...todayAnswers, [key]: opt })}
-                  className={`p-2 rounded-lg text-sm font-medium transition ${
-                    todayAnswers[key] === opt
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                  }`}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        <div className="mt-4">
-          <div className="text-sm text-gray-400 mb-2">Заметки (необязательно)</div>
-          <textarea
-            value={todayAnswers.notes}
-            onChange={(e) => setTodayAnswers({ ...todayAnswers, notes: e.target.value })}
-            className="w-full p-3 bg-gray-800 rounded-lg text-white text-sm border border-gray-700 focus:border-purple-500 outline-none"
-            rows="3"
-            placeholder="Ключевые события дня..."
-          />
-        </div>
-
-        <button
-          onClick={saveAnswers}
-          className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
-        >
-          💾 Сохранить день
-        </button>
-
-        {/* Анализ дня AI */}
-        <div className="mt-6 p-4 bg-blue-900/30 rounded-xl border border-blue-500/30">
-          <button
-            onClick={analyzeDayWithClaude}
-            disabled={!todayAnswers.energy || loadingDay}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg mb-3"
-          >
-            {loadingDay ? '⏳ Анализирую...' : '🤖 Совет AI на сегодня'}
-          </button>
-          
-          {dayAdvice && (
-            <div className="p-4 bg-blue-500/20 rounded-lg text-sm text-gray-200">
-              {dayAdvice}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Анализ */}
-      {Object.keys(waveData).length > 0 && (
-        <div className="max-w-2xl mx-auto p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-blue-500/30">
-          <button
-            onClick={() => setShowAnalysis(!showAnalysis)}
-            className="w-full flex items-center justify-between text-blue-300 font-bold text-lg"
-          >
-            <span className="flex items-center gap-2">
-              📊 Анализ паттерна
-            </span>
-            {showAnalysis ? '▲' : '▼'}
-          </button>
-
-          {showAnalysis && (
-            <div className="mt-4 text-sm text-gray-300 whitespace-pre-line bg-gray-900/50 p-4 rounded-lg">
-              {analyzePattern()}
-            </div>
-          )}
-
-          <button
-            onClick={analyzeWaveWithClaude}
-            disabled={Object.keys(waveData).length < 13 || loadingWave}
-            className="mt-4 w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg"
-          >
-            {loadingWave ? '⏳ Анализирую волну...' : '🔮 Анализ волны от AI'}
-          </button>
-
-          {waveAnalysis && (
-            <div className="mt-4 p-4 bg-purple-500/20 rounded-lg text-sm text-gray-200 whitespace-pre-line">
-              {waveAnalysis}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="max-w-2xl mx-auto mt-6 text-center text-xs text-gray-500">
-        Заполняйте каждый день. Через 13 дней вы увидите свой паттерн.
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-4 pb-20">
+      {renderScreen()}
+      <BottomNavigation currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
     </div>
   );
 };
