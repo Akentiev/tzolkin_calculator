@@ -5,9 +5,27 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
   const seal = seals[todayKin.seal];
   const tone = tones[todayKin.tone - 1];
 
+  const renderMarkdown = (markdown) => {
+    if (!markdown) return { __html: '' };
+
+    try {
+      if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+        return { __html: DOMPurify.sanitize(marked.parse(markdown)) };
+      }
+    } catch (_) {
+      // fall through to plain text
+    }
+
+    const escaped = String(markdown)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return { __html: escaped.replace(/\n/g, '<br/>') };
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-4 pb-20">
-      
+
       {/* Header */}
       <div className="max-w-2xl mx-auto mb-6">
         <div className="text-3xl font-bold mb-2">🌀 Tzolk'in Tracker</div>
@@ -69,11 +87,10 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
                 <button
                   key={opt}
                   onClick={() => setTodayAnswers({ ...todayAnswers, [key]: opt })}
-                  className={`p-2 rounded-lg text-sm font-medium transition ${
-                    todayAnswers[key] === opt
+                  className={`p-2 rounded-lg text-sm font-medium transition ${todayAnswers[key] === opt
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                  }`}
+                    }`}
                 >
                   {opt}
                 </button>
@@ -111,8 +128,11 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
           </button>
 
           {dayAdvice && (
-            <div className="p-4 bg-blue-500/20 rounded-lg text-sm text-gray-200">
-              {dayAdvice}
+            <div className="p-4 bg-blue-500/20 rounded-lg text-gray-200">
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={renderMarkdown(dayAdvice)}
+              />
             </div>
           )}
         </div>

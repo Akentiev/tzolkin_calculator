@@ -1,4 +1,22 @@
 const WaveHistory = ({ waveData, showAnalysis, setShowAnalysis, analyzeWaveWithClaude, waveAnalysis, loadingWave }) => {
+  const renderMarkdown = (markdown) => {
+    if (!markdown) return { __html: '' };
+
+    try {
+      if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+        return { __html: DOMPurify.sanitize(marked.parse(markdown)) };
+      }
+    } catch (_) {
+      // fall through to plain text
+    }
+
+    const escaped = String(markdown)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    return { __html: escaped.replace(/\n/g, '<br/>') };
+  };
+
   const analyzePattern = () => {
     const entries = Object.entries(waveData).filter(([_, v]) => v.energy);
     if (entries.length < 5) {
@@ -64,8 +82,11 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
           </button>
 
           {waveAnalysis && (
-            <div className="mt-4 p-4 bg-purple-500/20 rounded-lg text-sm text-gray-200 whitespace-pre-line">
-              {waveAnalysis}
+            <div className="mt-4 p-4 bg-purple-500/20 rounded-lg text-gray-200">
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={renderMarkdown(waveAnalysis)}
+              />
             </div>
           )}
         </div>
