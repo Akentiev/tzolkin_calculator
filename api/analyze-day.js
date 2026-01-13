@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   console.log('🔵 API вызван');
   console.log('🔵 Есть ключ?', !!process.env.CLAUDE_API_KEY);
-  
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -62,10 +62,10 @@ export default async function handler(req, res) {
     console.log('🔵 Статус от Claude:', response.status);
     const data = await response.json();
     console.log('🔵 Ответ Claude:', data);
-    
+
     const advice = data.content[0].text;
     res.status(200).json({ advice });
-    
+
   } catch (error) {
     console.error('❌ Ошибка:', error);
     res.status(500).json({ error: error.message });
