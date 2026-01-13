@@ -27,12 +27,14 @@ const BottomNavigation = ({ currentScreen, setCurrentScreen }) => {
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setCurrentScreen(item.screen)}
-              className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
-                currentScreen === item.screen
+              onClick={() => {
+                window.tgHapticLight?.();
+                setCurrentScreen(item.screen);
+              }}
+              className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${currentScreen === item.screen
                   ? 'bg-purple-600/20 text-purple-300 scale-105'
                   : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-              }`}
+                }`}
             >
               <div className="text-xl mb-1">{item.icon}</div>
               <div className="text-xs font-medium">{item.label}</div>

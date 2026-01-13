@@ -58,7 +58,10 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
       {Object.keys(waveData).length > 0 && (
         <div className="max-w-2xl mx-auto p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-blue-500/30">
           <button
-            onClick={() => setShowAnalysis(!showAnalysis)}
+            onClick={() => {
+              window.tgHapticLight?.();
+              setShowAnalysis(!showAnalysis);
+            }}
             className="w-full flex items-center justify-between text-blue-300 font-bold text-lg"
           >
             <span className="flex items-center gap-2">
@@ -74,7 +77,10 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
           )}
 
           <button
-            onClick={analyzeWaveWithClaude}
+            onClick={() => {
+              window.tgHapticLight?.();
+              analyzeWaveWithClaude();
+            }}
             disabled={Object.keys(waveData).length < 13 || loadingWave}
             className="mt-4 w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg"
           >

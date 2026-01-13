@@ -52,7 +52,10 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
         </div>
 
         <button
-          onClick={() => setShowDetails(!showDetails)}
+          onClick={() => {
+            window.tgHapticLight?.();
+            setShowDetails(!showDetails);
+          }}
           className="mt-4 text-purple-400 flex items-center gap-2 text-sm hover:text-purple-300"
         >
           {showDetails ? '▲' : '▼'}
@@ -86,10 +89,13 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
               {options.map(opt => (
                 <button
                   key={opt}
-                  onClick={() => setTodayAnswers({ ...todayAnswers, [key]: opt })}
+                  onClick={() => {
+                    window.tgHapticLight?.();
+                    setTodayAnswers({ ...todayAnswers, [key]: opt });
+                  }}
                   className={`p-2 rounded-lg text-sm font-medium transition ${todayAnswers[key] === opt
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                 >
                   {opt}
@@ -111,7 +117,10 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
         </div>
 
         <button
-          onClick={saveAnswers}
+          onClick={() => {
+            window.tgHapticLight?.();
+            saveAnswers();
+          }}
           className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
         >
           💾 Сохранить день
@@ -120,7 +129,10 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
         {/* Анализ дня AI */}
         <div className="mt-6 p-4 bg-blue-900/30 rounded-xl border border-blue-500/30">
           <button
-            onClick={analyzeDayWithClaude}
+            onClick={() => {
+              window.tgHapticLight?.();
+              analyzeDayWithClaude();
+            }}
             disabled={!todayAnswers.energy || loadingDay}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg mb-3"
           >

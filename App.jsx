@@ -1,5 +1,13 @@
 const { useState, useEffect } = React;
 
+window.tgHapticLight = window.tgHapticLight || (() => {
+  try {
+    window?.Telegram?.WebApp?.HapticFeedback?.impactOccurred?.('light');
+  } catch (_) {
+    // ignore
+  }
+});
+
 const { createClient } = supabase;
 
 const supabaseClient = createClient(
@@ -114,7 +122,7 @@ const TzolkinTracker = () => {
     const today = new Date().toISOString().split('T')[0];
     const kinData = calculateKin(today);
     setTodayKin(kinData);
-    
+
     const loadData = async () => {
       try {
         const userId = getUserId();
@@ -123,15 +131,15 @@ const TzolkinTracker = () => {
           .select('*')
           .eq('user_id', userId)
           .order('date', { ascending: false });
-        
+
         if (error) throw error;
-        
+
         const waveObj = {};
         data.forEach(row => {
           waveObj[row.date] = row;
         });
         setWaveData(waveObj);
-        
+
         if (waveObj[today]) {
           setTodayAnswers(waveObj[today]);
         }
@@ -139,14 +147,14 @@ const TzolkinTracker = () => {
         console.log('Ошибка загрузки:', e);
       }
     };
-    
+
     loadData();
   }, []);
 
   const saveAnswers = async () => {
     const today = new Date().toISOString().split('T')[0];
     const userId = getUserId();
-    
+
     const dataToSave = {
       user_id: userId,
       date: today,
@@ -155,14 +163,14 @@ const TzolkinTracker = () => {
       seal: todayKin.seal,
       ...todayAnswers
     };
-    
+
     try {
       const { error } = await supabaseClient
         .from('user_days')
         .upsert(dataToSave, { onConflict: 'user_id,date' });
-      
+
       if (error) throw error;
-      
+
       setWaveData({ ...waveData, [today]: dataToSave });
       alert('✓ Сохранено!');
     } catch (e) {
@@ -177,7 +185,7 @@ const TzolkinTracker = () => {
       const response = await fetch('/api/analyze-day', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           dayData: {
             tone: todayKin.tone,
             seal: seals[todayKin.seal].name,
@@ -185,7 +193,7 @@ const TzolkinTracker = () => {
           }
         })
       });
-      
+
       const data = await response.json();
       setDayAdvice(data.advice);
     } catch (e) {
@@ -200,13 +208,13 @@ const TzolkinTracker = () => {
       alert('Нужно заполнить все 13 дней');
       return;
     }
-    
+
     setLoadingWave(true);
     try {
       const response = await fetch('/api/analyze-wave', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           waveDays: entries.map(([date, data]) => ({
             date,
             tone: data.tone,
@@ -214,7 +222,7 @@ const TzolkinTracker = () => {
           }))
         })
       });
-      
+
       const data = await response.json();
       setWaveAnalysis(data.analysis);
     } catch (e) {
@@ -229,14 +237,14 @@ const TzolkinTracker = () => {
       updatedData[date] = { user_id: getUserId(), date };
     }
     updatedData[date][field] = value;
-    
+
     try {
       const { error } = await supabaseClient
         .from('user_days')
         .upsert(updatedData[date], { onConflict: 'user_id,date' });
-      
+
       if (error) throw error;
-      
+
       setWaveData(updatedData);
     } catch (e) {
       console.error('Ошибка сохранения:', e);
@@ -266,9 +274,9 @@ const TzolkinTracker = () => {
           updateDay={updateDay}
         />;
       case 'history':
-        return <WaveHistoryScreen 
-          waveData={waveData} 
-          setShowWaveHistory={() => {}} 
+        return <WaveHistoryScreen
+          waveData={waveData}
+          setShowWaveHistory={() => { }}
           setCurrentWaveOffset={setCurrentWaveOffset}
           setCurrentScreen={setCurrentScreen}
         />;
@@ -279,7 +287,10 @@ const TzolkinTracker = () => {
             <div className="max-w-2xl mx-auto mb-4 flex justify-between items-center">
               <h1 className="text-2xl font-bold text-purple-300">Tzolk'in Tracker</h1>
               <button
-                onClick={() => setCurrentScreen('tutorial')}
+                onClick={() => {
+                  window.tgHapticLight?.();
+                  setCurrentScreen('tutorial');
+                }}
                 className="bg-gray-600 hover:bg-gray-700 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition"
                 title="Обучение"
               >
