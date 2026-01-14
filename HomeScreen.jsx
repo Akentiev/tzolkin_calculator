@@ -204,18 +204,14 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
         </button>
 
         {/* Анализ дня AI */}
-        <div className="mt-6 rounded-3xl border border-white/10 bg-slate-950/90 p-5">
-          <div className="mb-3 text-sm font-semibold">
-            <span className="bg-gradient-to-r from-indigo-200 to-purple-200 bg-clip-text text-transparent">AI анализ</span>
-          </div>
-
+        <div className="mt-6">
           <button
             onClick={() => {
               window.tgHapticLight?.();
               analyzeDayWithClaude();
             }}
             disabled={!todayAnswers.energy || loadingDay}
-            className="w-full min-h-[50px] appearance-none rounded-3xl border border-white/10 bg-slate-950/90 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-60 disabled:bg-slate-950/90 active:scale-[0.98]"
+            className="w-full min-h-[50px] appearance-none rounded-3xl border border-white/10 bg-slate-950/60 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-60 disabled:bg-slate-950/60 active:scale-[0.98]"
           >
             <span className="inline-flex items-center justify-center gap-2">
               {(window.LucideReact?.Bot ? <window.LucideReact.Bot size={20} strokeWidth={1.5} /> : null)}
@@ -224,7 +220,7 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
           </button>
 
           {dayAdvice && (
-            <div className="mt-3 rounded-2xl border border-white/10 bg-slate-950/90 p-4 text-gray-200">
+            <div className="mt-3 rounded-3xl border border-white/10 bg-slate-950/60 p-5 text-gray-200">
               <div
                 className="prose prose-invert max-w-none"
                 dangerouslySetInnerHTML={renderMarkdown(dayAdvice)}
