@@ -282,44 +282,27 @@ const TzolkinTracker = () => {
         />;
       default:
         return (
-          <div>
-            {/* Навигация */}
-            <div className="max-w-2xl mx-auto mb-4 flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-purple-300">Tzolk'in Tracker</h1>
-              <button
-                onClick={() => {
-                  window.tgHapticLight?.();
-                  setCurrentScreen('tutorial');
-                }}
-                className="bg-gray-600 hover:bg-gray-700 text-white w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition"
-                title="Обучение"
-              >
-                ℹ️
-              </button>
-            </div>
-
-            <HomeScreen
-              todayKin={todayKin}
-              seals={seals}
-              tones={tones}
-              questions={questions}
-              waveData={waveData}
-              todayAnswers={todayAnswers}
-              setTodayAnswers={setTodayAnswers}
-              saveAnswers={saveAnswers}
-              analyzeDayWithClaude={analyzeDayWithClaude}
-              dayAdvice={dayAdvice}
-              loadingDay={loadingDay}
-              setCurrentScreen={setCurrentScreen}
-            />
-          </div>
+          <HomeScreen
+            todayKin={todayKin}
+            seals={seals}
+            tones={tones}
+            questions={questions}
+            waveData={waveData}
+            todayAnswers={todayAnswers}
+            setTodayAnswers={setTodayAnswers}
+            saveAnswers={saveAnswers}
+            analyzeDayWithClaude={analyzeDayWithClaude}
+            dayAdvice={dayAdvice}
+            loadingDay={loadingDay}
+            setCurrentScreen={setCurrentScreen}
+          />
         );
     }
   };
 
   if (currentScreen === 'tutorial') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+      <div className="min-h-screen text-white">
         <TutorialScreen seals={seals} tones={tones} setShowTutorial={() => setCurrentScreen('home')} />
         <BottomNavigation currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
       </div>
@@ -327,7 +310,7 @@ const TzolkinTracker = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-4 pb-20">
+    <div className="min-h-screen text-white">
       {renderScreen()}
       <BottomNavigation currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
     </div>

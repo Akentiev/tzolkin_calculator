@@ -69,7 +69,7 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
     }).join(' ');
 
     return (
-      <div className="w-full h-32 bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-lg p-4 mb-4">
+      <div className="w-full h-32 rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -153,15 +153,15 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
     const isToday = day.date === today;
 
     return (
-      <div className={`bg-gray-800/50 backdrop-blur rounded-lg p-4 mb-3 border ${isToday ? 'border-purple-400 ring-2 ring-purple-400/50' : 'border-gray-700'
+      <div className={`rounded-3xl border bg-white/5 p-5 backdrop-blur-xl ${isToday ? 'border-indigo-400/30 ring-1 ring-indigo-400/30' : 'border-white/10'
         }`}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-purple-400 text-sm">День {day.dayNumber}</div>
-            <div className="text-white font-semibold">{day.tone.name}</div>
-            <div className="text-xs font-medium" style={{ color: day.sealColor }}>{day.seal.name}</div>
+            <div className="text-sm text-white/60">День {day.dayNumber}</div>
+            <div className="mt-1 text-white font-semibold">{day.tone.name}</div>
+            <div className="mt-1 text-xs font-medium" style={{ color: day.sealColor }}>{day.seal.name}</div>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(level => (
               <button
                 key={level}
@@ -169,20 +169,27 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
                   window.tgHapticLight?.();
                   updateDayEnergy(day.date, level);
                 }}
-                className={`w-6 h-6 rounded ${day.energy === level ? energyColors[level] : 'bg-gray-700'
-                  } transition`}
+                className={`h-10 w-10 rounded-2xl border border-white/10 transition duration-300 active:scale-[0.96] ${day.energy === level ? energyColors[level] : 'bg-white/5 hover:bg-white/10'
+                  }`}
               />
             ))}
           </div>
         </div>
+
         <textarea
           value={day.notes}
           onChange={(e) => updateDayNotes(day.date, e.target.value)}
           placeholder="Заметки дня..."
-          className="w-full bg-gray-900/50 text-white text-sm p-2 rounded border border-gray-600 focus:border-purple-500 outline-none"
+          className="mt-4 w-full rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/90 placeholder:text-white/40 outline-none transition duration-300 focus:bg-white/10"
           rows="2"
         />
-        <div className="text-xs text-gray-500 mt-1">{getDayOfWeek(day.date)} • {day.date}</div>
+
+        <div className="mt-2 inline-flex items-center gap-2 text-xs text-white/50">
+          {window.LucideReact?.Clock ? (
+            <window.LucideReact.Clock size={14} strokeWidth={1.5} />
+          ) : null}
+          {getDayOfWeek(day.date)} • {day.date}
+        </div>
       </div>
     );
   };
@@ -197,48 +204,71 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4 pb-24">
 
       {/* Header */}
-      <div className="max-w-2xl mx-auto mb-6">
-        <div className="text-3xl font-bold mb-2">🌀 Волны Цолькин</div>
-        <div className="text-gray-400">Дневник паттернов энергии</div>
+      <div className="max-w-2xl mx-auto mb-4">
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-lg font-semibold text-white">Волны Цолькин</div>
+            <div className="text-white/60">
+              {window.LucideReact?.Waves ? (
+                <window.LucideReact.Waves size={20} strokeWidth={1.5} />
+              ) : null}
+            </div>
+          </div>
+          <div className="mt-1 text-sm text-white/60">Дневник паттернов энергии</div>
+        </div>
       </div>
 
       {/* Wave Navigation */}
-      <div className="max-w-2xl mx-auto mb-6 flex items-center justify-between">
+      <div className="max-w-2xl mx-auto mb-4 grid grid-cols-3 gap-2 items-stretch">
         <button
           onClick={() => {
             window.tgHapticLight?.();
             setCurrentWaveOffset(currentWaveOffset - 1);
           }}
-          className="p-2 bg-gray-800 rounded-lg text-2xl hover:bg-gray-700"
+          className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
         >
-          ◀
+          <span className="inline-flex items-center justify-center">
+            {window.LucideReact?.ChevronLeft ? (
+              <window.LucideReact.ChevronLeft size={20} strokeWidth={1.5} />
+            ) : (
+              '◀'
+            )}
+          </span>
         </button>
-        <div className="text-center">
-          <div className="text-lg font-semibold">Волна {Math.abs(currentWaveOffset) + 1}</div>
-          <div className="text-sm text-gray-400">{currentWave.startDate}</div>
+
+        <div className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-center backdrop-blur-xl">
+          <div className="text-sm font-semibold text-white">Волна {Math.abs(currentWaveOffset) + 1}</div>
+          <div className="mt-0.5 text-xs text-white/60">{currentWave.startDate}</div>
         </div>
+
         <button
           onClick={() => {
             window.tgHapticLight?.();
             setCurrentWaveOffset(currentWaveOffset + 1);
           }}
           disabled={currentWaveOffset >= 0}
-          className="p-2 bg-gray-800 rounded-lg disabled:opacity-30 text-2xl hover:bg-gray-700"
+          className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-40 active:scale-[0.98]"
         >
-          ▶
+          <span className="inline-flex items-center justify-center">
+            {window.LucideReact?.ChevronRight ? (
+              <window.LucideReact.ChevronRight size={20} strokeWidth={1.5} />
+            ) : (
+              '▶'
+            )}
+          </span>
         </button>
       </div>
 
       {/* Wave Graph */}
-      <div className="max-w-2xl mx-auto mb-6">
+      <div className="max-w-2xl mx-auto mb-4">
         <WaveGraph wave={currentWave} />
       </div>
 
       {/* Days List */}
-      <div className="max-w-2xl mx-auto space-y-3 pb-20">
+      <div className="max-w-2xl mx-auto space-y-3 pb-24">
         {currentWave.days.map((day, i) => (
           <DayCard key={i} day={day} index={i} />
         ))}

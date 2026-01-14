@@ -56,22 +56,39 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
     <div>
       {/* Анализ */}
       {Object.keys(waveData).length > 0 && (
-        <div className="max-w-2xl mx-auto p-6 bg-black/40 backdrop-blur-lg rounded-2xl border border-blue-500/30">
+        <div className="max-w-2xl mx-auto rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
           <button
             onClick={() => {
               window.tgHapticLight?.();
               setShowAnalysis(!showAnalysis);
             }}
-            className="w-full flex items-center justify-between text-blue-300 font-bold text-lg"
+            className="w-full min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-4 text-left text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
           >
-            <span className="flex items-center gap-2">
-              📊 Анализ паттерна
+            <span className="flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-2">
+                {(window.LucideReact?.BarChart3 ? (
+                  <window.LucideReact.BarChart3 size={20} strokeWidth={1.5} />
+                ) : null)}
+                Анализ паттерна
+              </span>
+              <span className="text-white/60">
+                {showAnalysis ? (
+                  window.LucideReact?.ChevronUp ? (
+                    <window.LucideReact.ChevronUp size={18} strokeWidth={1.5} />
+                  ) : (
+                    '▲'
+                  )
+                ) : window.LucideReact?.ChevronDown ? (
+                  <window.LucideReact.ChevronDown size={18} strokeWidth={1.5} />
+                ) : (
+                  '▼'
+                )}
+              </span>
             </span>
-            {showAnalysis ? '▲' : '▼'}
           </button>
 
           {showAnalysis && (
-            <div className="mt-4 text-sm text-gray-300 whitespace-pre-line bg-gray-900/50 p-4 rounded-lg">
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80 whitespace-pre-line">
               {analyzePattern()}
             </div>
           )}
@@ -82,13 +99,18 @@ ${entries.length >= 13 ? '✓ Полная волна пройдена! Патт
               analyzeWaveWithClaude();
             }}
             disabled={Object.keys(waveData).length < 13 || loadingWave}
-            className="mt-4 w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-3 rounded-lg"
+            className="mt-4 w-full min-h-[50px] rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition duration-300 hover:opacity-95 disabled:opacity-40 active:scale-[0.98]"
           >
-            {loadingWave ? '⏳ Анализирую волну...' : '🔮 Анализ волны от AI'}
+            <span className="inline-flex items-center justify-center gap-2">
+              {(window.LucideReact?.Sparkles ? (
+                <window.LucideReact.Sparkles size={20} strokeWidth={1.5} />
+              ) : null)}
+              {loadingWave ? 'Анализирую волну...' : 'Анализ волны от AI'}
+            </span>
           </button>
 
           {waveAnalysis && (
-            <div className="mt-4 p-4 bg-purple-500/20 rounded-lg text-gray-200">
+            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-gray-200">
               <div
                 className="prose prose-invert max-w-none"
                 dangerouslySetInnerHTML={renderMarkdown(waveAnalysis)}

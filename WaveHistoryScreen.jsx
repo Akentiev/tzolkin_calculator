@@ -54,19 +54,36 @@ const WaveHistoryScreen = ({ waveData, setShowWaveHistory, setCurrentWaveOffset,
   const waves = getWaves();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4 pb-24">
 
       {/* Заголовок */}
-      <div className="max-w-4xl mx-auto mb-6 text-center">
-        <h1 className="text-3xl font-bold text-purple-300">📊 История волн</h1>
+      <div className="max-w-4xl mx-auto mb-4">
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-lg font-semibold text-white">История волн</div>
+            <div className="text-white/60">
+              {window.LucideReact?.Layers ? (
+                <window.LucideReact.Layers size={20} strokeWidth={1.5} />
+              ) : null}
+            </div>
+          </div>
+          <div className="mt-1 text-sm text-white/60">Выберите волну, чтобы открыть детали</div>
+        </div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-3 pb-20">
+      <div className="max-w-4xl mx-auto space-y-3 pb-24">
         {waves.map((wave, index) => {
           const completedDays = wave.days.filter(d => d.data?.energy).length;
-          const avgEnergy = wave.days.reduce((sum, d) => sum + (d.data?.energy ? { 'Низкая': 1, 'Спад': 2, 'Средняя': 3, 'Подъём': 4, 'Высокая': 5 }[d.data.energy] || 0 : 0), 0) / completedDays || 0;
+          const energyScore = (label) => ({
+            'Низкая': 1,
+            'Спад': 2,
+            'Средняя': 3,
+            'Подъём': 4,
+            'Высокая': 5
+          }[label] || 0);
+          const avgEnergy = wave.days.reduce((sum, d) => sum + (d.data?.energy ? energyScore(d.data.energy) : 0), 0) / completedDays || 0;
           const peakDay = wave.days.reduce((max, d, idx) =>
-            (d.data?.energy ? { 'Низкая': 1, 'Спад': 2, 'Средняя': 3, 'Подъём': 4, 'Высокая': 5 }[d.data.energy] || 0 : 0) > (wave.days[max]?.data?.energy ? { 'Низкая': 1, 'Спад': 2, 'Средняя': 3, 'Подъём': 4, 'Высокая': 5 }[wave.days[max].data.energy] || 0 : 0) ? idx : max, 0
+            (d.data?.energy ? energyScore(d.data.energy) : 0) > (wave.days[max]?.data?.energy ? energyScore(wave.days[max].data.energy) : 0) ? idx : max, 0
           );
 
           return (
@@ -77,22 +94,59 @@ const WaveHistoryScreen = ({ waveData, setShowWaveHistory, setCurrentWaveOffset,
                 setCurrentWaveOffset(wave.offset);
                 setCurrentScreen('wave');
               }}
-              className="w-full bg-gray-800/50 backdrop-blur rounded-lg p-4 border border-gray-700 hover:border-purple-500 transition text-left"
+              className="w-full rounded-3xl border border-white/10 bg-white/5 p-5 text-left backdrop-blur-xl transition duration-300 hover:bg-white/10 active:scale-[0.98]"
             >
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-white font-semibold">Волна {Math.abs(wave.offset) + 1}</div>
-                  <div className="text-gray-400 text-sm">{wave.startDate}</div>
+                  <div className="mt-1 inline-flex items-center gap-2 text-sm text-white/60">
+                    {window.LucideReact?.Calendar ? (
+                      <window.LucideReact.Calendar size={16} strokeWidth={1.5} />
+                    ) : null}
+                    {wave.startDate}
+                  </div>
                 </div>
-                <div className={`px-3 py-1 rounded text-xs ${wave.offset === 0 ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'
+
+                <div className={`shrink-0 rounded-full px-3 py-1 text-xs border ${wave.offset === 0
+                  ? 'bg-emerald-500/10 text-emerald-200 border-emerald-400/20'
+                  : 'bg-white/5 text-white/60 border-white/10'
                   }`}>
                   {wave.offset === 0 ? 'Текущая' : 'Прошлая'}
                 </div>
               </div>
-              <div className="text-sm text-gray-300 space-y-1">
-                <div>📊 Заполнено дней: {completedDays}/13</div>
-                <div>⚡ Средняя энергия: {avgEnergy.toFixed(1)}/5</div>
-                {completedDays > 0 && <div>🔥 Пик: День {peakDay + 1}</div>}
+
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-white/80">
+                  <div className="inline-flex items-center gap-2 text-white/60">
+                    {window.LucideReact?.CheckCircle2 ? (
+                      <window.LucideReact.CheckCircle2 size={16} strokeWidth={1.5} />
+                    ) : null}
+                    Заполнено
+                  </div>
+                  <div className="mt-1 text-white font-semibold">{completedDays}/13</div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-white/80">
+                  <div className="inline-flex items-center gap-2 text-white/60">
+                    {window.LucideReact?.Zap ? (
+                      <window.LucideReact.Zap size={16} strokeWidth={1.5} />
+                    ) : null}
+                    Средняя энергия
+                  </div>
+                  <div className="mt-1 text-white font-semibold">{avgEnergy.toFixed(1)}/5</div>
+                </div>
+
+                {completedDays > 0 && (
+                  <div className="col-span-2 rounded-2xl border border-white/10 bg-white/5 p-3 text-white/80">
+                    <div className="inline-flex items-center gap-2 text-white/60">
+                      {window.LucideReact?.Flame ? (
+                        <window.LucideReact.Flame size={16} strokeWidth={1.5} />
+                      ) : null}
+                      Пик
+                    </div>
+                    <div className="mt-1 text-white font-semibold">День {peakDay + 1}</div>
+                  </div>
+                )}
               </div>
             </button>
           );
