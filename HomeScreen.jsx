@@ -15,15 +15,31 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
   const renderMarkdown = (markdown) => {
     if (!markdown) return { __html: '' };
 
+    const stripLeadingEmojiFromHeadings = (text) => {
+      // Remove emoji/pictographs right after Markdown heading markers to avoid “old emoji icons” in AI output.
+      // Example: "### 📊 Title" -> "### Title"
+      try {
+        return String(text)
+          .replace(
+            /^(\s{0,3}#{1,6}\s*)(?:[\u{2600}-\u{27BF}\u{1F300}-\u{1FAFF}]\uFE0F?\s*)+/gmu,
+            '$1'
+          );
+      } catch (_) {
+        return String(text);
+      }
+    };
+
+    const cleaned = stripLeadingEmojiFromHeadings(markdown);
+
     try {
       if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-        return { __html: DOMPurify.sanitize(marked.parse(markdown)) };
+        return { __html: DOMPurify.sanitize(marked.parse(cleaned)) };
       }
     } catch (_) {
       // fall through to plain text
     }
 
-    const escaped = String(markdown)
+    const escaped = String(cleaned)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
@@ -152,8 +168,8 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
                     setTodayAnswers({ ...todayAnswers, [key]: opt });
                   }}
                   className={`min-h-[50px] rounded-2xl px-3 py-3 text-sm font-medium transition duration-300 active:scale-[0.98] ${todayAnswers[key] === opt
-                      ? 'bg-white/10 text-white ring-1 ring-white/20'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
+                    ? 'bg-gradient-to-r from-indigo-500/30 to-purple-600/30 text-white ring-1 ring-indigo-300/30 border border-indigo-400/30 shadow-lg shadow-indigo-500/10'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
                     }`}
                 >
                   {opt}
@@ -188,7 +204,7 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
         </button>
 
         {/* Анализ дня AI */}
-        <div className="mt-6 rounded-3xl border border-white/10 bg-blue-500/5 p-5 backdrop-blur-xl">
+        <div className="mt-6 rounded-3xl border border-white/10 bg-slate-950/30 p-5 backdrop-blur-xl">
           <div className="mb-3 text-sm font-semibold">
             <span className="bg-gradient-to-r from-indigo-200 to-purple-200 bg-clip-text text-transparent">AI анализ</span>
           </div>
@@ -199,7 +215,7 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
               analyzeDayWithClaude();
             }}
             disabled={!todayAnswers.energy || loadingDay}
-            className="w-full min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-40 active:scale-[0.98]"
+            className="w-full min-h-[50px] rounded-3xl border border-white/10 bg-slate-950/30 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-40 active:scale-[0.98]"
           >
             <span className="inline-flex items-center justify-center gap-2">
               {(window.LucideReact?.Bot ? <window.LucideReact.Bot size={20} strokeWidth={1.5} /> : null)}
@@ -208,7 +224,7 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
           </button>
 
           {dayAdvice && (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-gray-200">
+            <div className="mt-3 rounded-2xl border border-white/10 bg-slate-950/30 p-4 text-gray-200">
               <div
                 className="prose prose-invert max-w-none"
                 dangerouslySetInnerHTML={renderMarkdown(dayAdvice)}
