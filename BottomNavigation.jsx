@@ -45,9 +45,9 @@ const BottomNavigation = ({ currentScreen, setCurrentScreen }) => {
                     window.tgHapticLight?.();
                     setCurrentScreen(item.screen);
                   }}
-                  className={`min-h-[56px] rounded-3xl border transition duration-300 active:scale-[0.98] ${isActive
-                    ? 'border-white/20 bg-white/10 text-white'
-                    : 'border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/90'
+                  className={`min-h-[56px] rounded-3xl transition duration-300 active:scale-[0.98] ${isActive
+                    ? 'bg-white/10 text-white'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/90'
                     }`}
                 >
                   <div className="flex flex-col items-center justify-center gap-1 py-2">

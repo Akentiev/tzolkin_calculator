@@ -374,6 +374,7 @@ const TzolkinTracker = () => {
           todayKin={todayKin}
           seals={seals}
           tones={tones}
+          accentColor={seals?.[todayKin.seal]?.color}
           questions={questions}
           waveData={waveData}
           todayAnswers={todayAnswers}
@@ -390,6 +391,7 @@ const TzolkinTracker = () => {
         return <WaveHistoryScreen
           waveData={waveData}
           selectedDate={selectedDate}
+          accentColor={seals?.[todayKin.seal]?.color}
           setShowWaveHistory={() => { }}
           setCurrentWaveOffset={setCurrentWaveOffset}
           setCurrentScreen={setCurrentScreen}

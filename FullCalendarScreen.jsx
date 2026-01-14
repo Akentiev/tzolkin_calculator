@@ -149,6 +149,17 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
     const seal = seals?.[tzolkin.glyph];
     const tone = tones?.[tzolkin.tone - 1];
 
+    const hexToRgba = (hex, a) => {
+        const h = String(hex || '').replace('#', '');
+        if (h.length !== 6) return `rgba(255,255,255,${a})`;
+        const r = parseInt(h.slice(0, 2), 16);
+        const g = parseInt(h.slice(2, 4), 16);
+        const b = parseInt(h.slice(4, 6), 16);
+        return `rgba(${r},${g},${b},${a})`;
+    };
+
+    const accent = seal?.color || '#F3F4F6';
+
     const changeDate = (days) => {
         const d = toDateObj(selectedDate);
         d.setDate(d.getDate() + days);
@@ -169,7 +180,13 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4 pb-24">
             <div className="max-w-2xl mx-auto">
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+                <div
+                    className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                    style={{
+                        borderColor: hexToRgba(accent, 0.22),
+                        backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.18)}, transparent 55%)`
+                    }}
+                >
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <div className="text-lg font-semibold text-white">Калькулятор</div>
@@ -190,7 +207,8 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                             window.tgHapticLight?.();
                             changeDate(-1);
                         }}
-                        className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+                        className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+                        style={{ borderColor: hexToRgba(accent, 0.16) }}
                         aria-label="Предыдущий день"
                     >
                         <span className="inline-flex items-center justify-center">
@@ -202,7 +220,13 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                         </span>
                     </button>
 
-                    <div className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-center backdrop-blur-xl">
+                    <div
+                        className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-center backdrop-blur-xl"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.18),
+                            backgroundImage: `radial-gradient(700px circle at 50% 0%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+                        }}
+                    >
                         <input
                             type="date"
                             value={selectedDate}
@@ -221,7 +245,8 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                             window.tgHapticLight?.();
                             changeDate(1);
                         }}
-                        className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+                        className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+                        style={{ borderColor: hexToRgba(accent, 0.16) }}
                         aria-label="Следующий день"
                     >
                         <span className="inline-flex items-center justify-center">
@@ -240,7 +265,8 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                         window.tgHapticLight?.();
                         setToday();
                     }}
-                    className="mt-3 w-full min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+                    className="mt-3 w-full min-h-[50px] rounded-3xl border bg-white/5 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+                    style={{ borderColor: hexToRgba(accent, 0.16) }}
                 >
                     <span className="inline-flex items-center justify-center gap-2">
                         {window.LucideReact?.Calendar ? (
@@ -251,13 +277,25 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                 </button>
 
                 <div className="mt-4 space-y-3">
-                    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+                    <div
+                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.14),
+                            backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+                        }}
+                    >
                         <div className="text-sm font-semibold text-white">Julian Day</div>
                         <div className="mt-2 text-3xl font-semibold text-white">{jdn}</div>
                         <div className="mt-1 text-sm text-white/60">Астрономический счёт дней</div>
                     </div>
 
-                    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+                    <div
+                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.14),
+                            backgroundImage: `radial-gradient(900px circle at 90% 0%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+                        }}
+                    >
                         <div className="text-sm font-semibold text-white">13 Лун</div>
                         {moon13.isDayOutOfTime ? (
                             <div className="mt-2 text-2xl font-semibold text-white">День Вне Времени</div>
@@ -269,7 +307,13 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                         <div className="mt-1 text-sm text-white/60">Кин: {moon13.dayOfYear} • Год начинается 26 июля • Год: {moon13.yearStartYear}/{moon13.yearStartYear + 1}</div>
                     </div>
 
-                    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+                    <div
+                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.14),
+                            backgroundImage: `radial-gradient(900px circle at 10% 100%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+                        }}
+                    >
                         <div className="text-sm font-semibold text-white">Long Count</div>
                         <div className="mt-2 text-2xl font-semibold text-white">
                             {longCount.baktun}.{longCount.katun}.{longCount.tun}.{longCount.winal}.{longCount.kin}
@@ -291,7 +335,13 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                         <div className="mt-3 text-sm text-white/60">Дней с начала эры: {longCount.total.toLocaleString()}</div>
                     </div>
 
-                    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+                    <div
+                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.18),
+                            backgroundImage: `radial-gradient(900px circle at 90% 100%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+                        }}
+                    >
                         <div className="text-sm font-semibold text-white">Цолькин</div>
                         <div className="mt-2 text-3xl font-semibold" style={{ color: seal?.color || undefined }}>
                             {tzolkin.tone} {seal?.name || '—'}

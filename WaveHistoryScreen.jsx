@@ -1,6 +1,17 @@
-const WaveHistoryScreen = ({ waveData, selectedDate, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen }) => {
+const WaveHistoryScreen = ({ waveData, selectedDate, accentColor, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen }) => {
   const [view, setView] = useState('current');
   const currentDate = selectedDate || new Date().toISOString().split('T')[0];
+
+  const hexToRgba = (hex, a) => {
+    const h = String(hex || '').replace('#', '');
+    if (h.length !== 6) return `rgba(255,255,255,${a})`;
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  };
+
+  const accent = accentColor || '#F3F4F6';
 
   // Получить список всех волн
   const getWaves = () => {
@@ -58,7 +69,13 @@ const WaveHistoryScreen = ({ waveData, selectedDate, setShowWaveHistory, setCurr
 
       {/* Заголовок */}
       <div className="max-w-4xl mx-auto mb-4">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+        <div
+          className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+          style={{
+            borderColor: hexToRgba(accent, 0.18),
+            backgroundImage: `radial-gradient(900px circle at 0% 0%, ${hexToRgba(accent, 0.14)}, transparent 55%)`
+          }}
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="text-lg font-semibold text-white">История волн</div>
             <div className="text-white/60">
@@ -94,7 +111,13 @@ const WaveHistoryScreen = ({ waveData, selectedDate, setShowWaveHistory, setCurr
                 setCurrentWaveOffset(wave.offset);
                 setCurrentScreen('wave');
               }}
-              className="w-full rounded-3xl border border-white/10 bg-white/5 p-5 text-left backdrop-blur-xl transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+              className="w-full rounded-3xl border bg-white/5 p-5 text-left backdrop-blur-xl transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+              style={{
+                borderColor: hexToRgba(accent, wave.offset === 0 ? 0.35 : 0.14),
+                backgroundImage: wave.offset === 0
+                  ? `radial-gradient(900px circle at 90% 0%, ${hexToRgba(accent, 0.18)}, transparent 55%)`
+                  : `radial-gradient(700px circle at 10% 0%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+              }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -107,10 +130,18 @@ const WaveHistoryScreen = ({ waveData, selectedDate, setShowWaveHistory, setCurr
                   </div>
                 </div>
 
-                <div className={`shrink-0 rounded-full px-3 py-1 text-xs border ${wave.offset === 0
-                  ? 'bg-emerald-500/10 text-emerald-200 border-emerald-400/20'
-                  : 'bg-white/5 text-white/60 border-white/10'
-                  }`}>
+                <div
+                  className="shrink-0 rounded-full px-3 py-1 text-xs border"
+                  style={wave.offset === 0 ? {
+                    backgroundColor: hexToRgba(accent, 0.14),
+                    borderColor: hexToRgba(accent, 0.35),
+                    color: 'rgba(255,255,255,0.92)'
+                  } : {
+                    backgroundColor: 'rgba(255,255,255,0.04)',
+                    borderColor: 'rgba(255,255,255,0.10)',
+                    color: 'rgba(255,255,255,0.65)'
+                  }}
+                >
                   {wave.offset === 0 ? 'Текущая' : 'Прошлая'}
                 </div>
               </div>

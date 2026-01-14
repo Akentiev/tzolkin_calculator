@@ -5,8 +5,19 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
   const seal = seals[todayKin.seal];
   const tone = tones[todayKin.tone - 1];
 
+  const hexToRgba = (hex, a) => {
+    const h = String(hex || '').replace('#', '');
+    if (h.length !== 6) return `rgba(255,255,255,${a})`;
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  };
+
+  const accent = seal?.color || '#F3F4F6';
+
   const { Calendar, ChevronDown, ChevronUp } = window.LucideReact || {};
-  const todayLabel = new Date((selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00').toLocaleDateString('ru-RU', {
+  const todayLabel = new Date((selectedDate || '') + 'T00:00:00').toLocaleDateString('ru-RU', {
     weekday: 'short',
     day: '2-digit',
     month: 'long'
@@ -96,7 +107,13 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
       </div>
 
       {/* Сегодня */}
-      <div className="w-full mb-6 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+      <div
+        className="w-full mb-6 rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+        style={{
+          borderColor: hexToRgba(accent, 0.28),
+          backgroundImage: `radial-gradient(800px circle at 10% 0%, ${hexToRgba(accent, 0.18)}, transparent 55%)`
+        }}
+      >
         <div className="grid grid-cols-1 gap-4">
           <div>
             <div className="text-xs text-white/60">Сегодня</div>
@@ -107,12 +124,24 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div
+              className="rounded-2xl border bg-white/5 p-4"
+              style={{
+                borderColor: hexToRgba(accent, 0.2),
+                backgroundImage: `radial-gradient(600px circle at 0% 0%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+              }}
+            >
               <div className="text-xs text-white/60">Тон</div>
               <div className="mt-1 text-sm font-semibold text-white">{tone.n} • {tone.name}</div>
               <div className="mt-1 text-xs text-white/60">{tone.essence}</div>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-blue-500/5 p-4">
+            <div
+              className="rounded-2xl border bg-white/5 p-4"
+              style={{
+                borderColor: hexToRgba(accent, 0.2),
+                backgroundImage: `radial-gradient(600px circle at 100% 0%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+              }}
+            >
               <div className="text-xs text-white/60">Фаза</div>
               <div className="mt-1 text-sm font-semibold text-white">{tone.phase}</div>
               <div className="mt-1 text-xs text-white/60">{tone.action}</div>
@@ -158,7 +187,13 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
       </div>
 
       {/* Отследить день */}
-      <div className="w-full mb-6 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+      <div
+        className="w-full mb-6 rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+        style={{
+          borderColor: hexToRgba(accent, 0.18),
+          backgroundImage: `radial-gradient(900px circle at 90% 0%, ${hexToRgba(accent, 0.12)}, transparent 55%)`
+        }}
+      >
         <div className="flex items-center justify-between gap-3">
           <div className="text-lg font-semibold text-white">Отследить день</div>
           <div className="text-xs text-white/50">5 вопросов + заметка</div>
@@ -175,10 +210,15 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
                     window.tgHapticLight?.();
                     setTodayAnswers({ ...todayAnswers, [key]: opt });
                   }}
-                  className={`min-h-[50px] rounded-2xl px-3 py-3 text-sm font-medium transition duration-300 active:scale-[0.98] ${todayAnswers[key] === opt
-                    ? 'bg-gradient-to-r from-indigo-500/45 to-purple-600/45 text-white ring-1 ring-indigo-200/50 border border-indigo-300/50 shadow-lg shadow-indigo-500/15'
-                    : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
+                  className={`min-h-[50px] rounded-2xl border px-3 py-3 text-sm font-medium transition duration-300 active:scale-[0.98] ${todayAnswers[key] === opt
+                    ? 'text-white'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 border-white/10'
                     }`}
+                  style={todayAnswers[key] === opt ? {
+                    backgroundImage: `linear-gradient(135deg, ${hexToRgba(accent, 0.30)}, ${hexToRgba(accent, 0.14)})`,
+                    borderColor: hexToRgba(accent, 0.55),
+                    boxShadow: `0 18px 40px ${hexToRgba(accent, 0.14)}`
+                  } : undefined}
                 >
                   {opt}
                 </button>
@@ -203,7 +243,11 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
             window.tgHapticLight?.();
             saveAnswers();
           }}
-          className="mt-4 w-full min-h-[50px] rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition duration-300 hover:opacity-95 active:scale-[0.98]"
+          className="mt-4 w-full min-h-[50px] rounded-3xl px-4 py-4 text-sm font-semibold text-white transition duration-300 hover:opacity-95 active:scale-[0.98]"
+          style={{
+            backgroundImage: `linear-gradient(135deg, ${hexToRgba(accent, 0.95)}, ${hexToRgba(accent, 0.55)})`,
+            boxShadow: `0 18px 45px ${hexToRgba(accent, 0.18)}`
+          }}
         >
           <span className="inline-flex items-center justify-center gap-2">
             {(window.LucideReact?.Save ? <window.LucideReact.Save size={20} strokeWidth={1.5} /> : null)}

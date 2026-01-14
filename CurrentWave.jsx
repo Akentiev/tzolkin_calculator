@@ -1,8 +1,19 @@
 const { useState } = React;
 
-const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurrentWaveOffset, waveData }) => {
+const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurrentWaveOffset, waveData, updateDay, accentColor }) => {
   const seal = seals[todayKin.seal];
   const tone = tones[todayKin.tone - 1];
+
+  const hexToRgba = (hex, a) => {
+    const h = String(hex || '').replace('#', '');
+    if (h.length !== 6) return `rgba(255,255,255,${a})`;
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  };
+
+  const accent = accentColor || seal?.color || '#F3F4F6';
 
   // Получить данные текущей волны
   const getCurrentWave = () => {
@@ -69,13 +80,19 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
     }).join(' ');
 
     return (
-      <div className="w-full h-32 rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
+      <div
+        className="w-full h-32 rounded-3xl border bg-white/5 p-4 backdrop-blur-xl"
+        style={{
+          borderColor: hexToRgba(accent, 0.18),
+          backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+        }}
+      >
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.5" />
-              <stop offset="50%" stopColor="#EC4899" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.5" />
+              <stop offset="0%" stopColor={accent} stopOpacity="0.25" />
+              <stop offset="50%" stopColor={accent} stopOpacity="0.55" />
+              <stop offset="100%" stopColor={accent} stopOpacity="0.25" />
             </linearGradient>
           </defs>
 
@@ -104,7 +121,7 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
                 cx={x}
                 cy={y}
                 r="2"
-                fill="#F59E0B"
+                fill={accent}
                 className="drop-shadow-lg"
               />
             );
@@ -152,9 +169,18 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
     // Проверить, является ли день сегодняшним
     const isToday = day.date === today;
 
+    const corner = index % 4;
+    const cornerPos = corner === 0 ? '10% 0%' : corner === 1 ? '90% 0%' : corner === 2 ? '10% 100%' : '90% 100%';
+
     return (
-      <div className={`rounded-3xl border bg-white/5 p-5 backdrop-blur-xl ${isToday ? 'border-indigo-400/30 ring-1 ring-indigo-400/30' : 'border-white/10'
-        }`}>
+      <div
+        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+        style={{
+          borderColor: isToday ? hexToRgba(accent, 0.45) : 'rgba(255,255,255,0.10)',
+          backgroundImage: `radial-gradient(900px circle at ${cornerPos}, ${hexToRgba(accent, isToday ? 0.16 : 0.10)}, transparent 60%)`,
+          boxShadow: isToday ? `0 0 0 1px ${hexToRgba(accent, 0.22)}` : undefined
+        }}
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-sm text-white/60">День {day.dayNumber}</div>
@@ -208,7 +234,13 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
 
       {/* Header */}
       <div className="max-w-2xl mx-auto mb-4">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
+        <div
+          className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+          style={{
+            borderColor: hexToRgba(accent, 0.18),
+            backgroundImage: `radial-gradient(900px circle at 0% 0%, ${hexToRgba(accent, 0.14)}, transparent 55%)`
+          }}
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="text-lg font-semibold text-white">Волны Цолькин</div>
             <div className="text-white/60">
@@ -228,7 +260,8 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
             window.tgHapticLight?.();
             setCurrentWaveOffset(currentWaveOffset - 1);
           }}
-          className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+          className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+          style={{ borderColor: hexToRgba(accent, 0.16) }}
         >
           <span className="inline-flex items-center justify-center">
             {window.LucideReact?.ChevronLeft ? (
@@ -239,7 +272,13 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
           </span>
         </button>
 
-        <div className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-center backdrop-blur-xl">
+        <div
+          className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-center backdrop-blur-xl"
+          style={{
+            borderColor: hexToRgba(accent, 0.18),
+            backgroundImage: `radial-gradient(800px circle at 50% 0%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+          }}
+        >
           <div className="text-sm font-semibold text-white">Волна {Math.abs(currentWaveOffset) + 1}</div>
           <div className="mt-0.5 text-xs text-white/60">{currentWave.startDate}</div>
         </div>
@@ -250,7 +289,8 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
             setCurrentWaveOffset(currentWaveOffset + 1);
           }}
           disabled={currentWaveOffset >= 0}
-          className="min-h-[50px] rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-40 active:scale-[0.98]"
+          className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-40 active:scale-[0.98]"
+          style={{ borderColor: hexToRgba(accent, 0.16) }}
         >
           <span className="inline-flex items-center justify-center">
             {window.LucideReact?.ChevronRight ? (
