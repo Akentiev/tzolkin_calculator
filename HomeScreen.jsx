@@ -1,12 +1,12 @@
 const { useState } = React;
 
-const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers, setTodayAnswers, saveAnswers, analyzeDayWithClaude, dayAdvice, loadingDay, setCurrentScreen }) => {
+const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData, todayAnswers, setTodayAnswers, saveAnswers, analyzeDayWithClaude, dayAdvice, loadingDay, setCurrentScreen }) => {
   const [showDetails, setShowDetails] = useState(false);
   const seal = seals[todayKin.seal];
   const tone = tones[todayKin.tone - 1];
 
   const { Calendar, ChevronDown, ChevronUp } = window.LucideReact || {};
-  const todayLabel = new Date().toLocaleDateString('ru-RU', {
+  const todayLabel = new Date((selectedDate || new Date().toISOString().split('T')[0]) + 'T00:00:00').toLocaleDateString('ru-RU', {
     weekday: 'short',
     day: '2-digit',
     month: 'long'
@@ -75,13 +75,21 @@ const HomeScreen = ({ todayKin, seals, tones, questions, waveData, todayAnswers,
                 )}
               </button>
 
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-xl">
+              <button
+                type="button"
+                onClick={() => {
+                  window.tgHapticLight?.();
+                  setCurrentScreen?.('fullCalendar');
+                }}
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-xl transition duration-300 hover:bg-white/10 active:scale-[0.98]"
+                title="Открыть калькулятор"
+              >
                 {Calendar ? <Calendar size={20} strokeWidth={1.5} className="text-white/70" /> : <span className="text-white/70">📅</span>}
                 <div className="text-xs leading-tight">
                   <div className="text-white/80">{todayLabel}</div>
                   <div className="text-white/60">Кин {todayKin.kin}</div>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>

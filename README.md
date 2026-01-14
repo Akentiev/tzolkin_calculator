@@ -1,36 +1,45 @@
 # Tzolkin Tracker (tzolkin_calculator)
 
-Небольшой трекер 13‑дневных «волн» (Tzolkin): показывает текущий день (тон + печать), позволяет ежедневно отвечать на вопросы/вести заметку, сохраняет данные в Supabase и умеет запрашивать ИИ‑совет/анализ волны через API.
+Мини‑приложение (в том числе для Telegram WebApp) для ежедневной рефлексии по календарю Цолькин: показывает текущий Kin (тон + печать), даёт быстрый дневник на 5 вопросов + заметка, строит историю/волну и запрашивает AI‑анализ дня или полной 13‑дневной волны.
 
-## Что умеет
+## Возможности
 
 - Расчёт Kin / тона / печати по дате
-- Ежедневные ответы (энергия, резонанс, делать/быть, стадия проекта, инсайт, заметки)
-- Сохранение и история заполненных дней (Supabase)
-- ИИ‑совет на день и анализ 13‑дневной волны (Anthropic Claude через `api/`)
-- Поддержка Telegram Web App (скрипт `telegram-web-app.js` подключён)
+- Ежедневный трекинг: энергия, резонанс, делать/быть, стадия проекта, инсайт, заметки
+- История волн и экран текущей 13‑дневной волны
+- AI совет на день и AI анализ полной волны через serverless API (`/api/...`)
+- Рендер AI‑ответов в Markdown (без сборщика) с санитайзингом
+- Haptic feedback в Telegram WebApp при нажатиях
 
-## Технологии
+## Технологии и подход
 
-- Frontend: React 18 через CDN + Babel Standalone (JSX прямо в браузере)
-- UI: Tailwind через CDN
-- Storage: Supabase
-- Backend API: serverless‑роуты в папке `api/` (подход совместим с Vercel)
+- Frontend: React 18 через CDN + Babel Standalone (JSX компилируется в браузере)
+- UI: Tailwind CSS через CDN + Typography plugin (`prose prose-invert`)
+- Markdown: `marked` + `DOMPurify` (через CDN), вывод через `dangerouslySetInnerHTML` после санитайза
+- Icons: `lucide-react` UMD (через CDN), используется `window.LucideReact`
+- Storage: Supabase (таблица `user_days`)
+- Backend API: serverless‑роуты в папке `api/` (формат совместим с Vercel‑подобными платформами)
 - AI: Anthropic Messages API (Claude)
 
-## Структура проекта
+## Структура
 
-- `index.html` — подключение библиотек и всех `*.jsx` файлов
-- `App.jsx` и остальные `*.jsx` — экраны/компоненты приложения
-- `api/analyze-day.js` — POST `/api/analyze-day` (совет на день)
-- `api/analyze-wave.js` — POST `/api/analyze-wave` (анализ волны)
-- `api/telegram.js` — обработчик Telegram webhook (если используется)
+- `index.html` — подключение CDN библиотек и `*.jsx`
+- `App.jsx` — корневой компонент, роутинг по экранам
+- `HomeScreen.jsx` — текущий день, “Отследить день”, AI совет
+- `CurrentWave.jsx` — текущая волна (13 дней)
+- `WaveHistoryScreen.jsx` — список волн
+- `WaveHistory.jsx` — анализ паттерна + AI анализ волны (Markdown)
+- `BottomNavigation.jsx` — нижняя навигация
+- `TutorialScreen.jsx` — обучение
+- `api/analyze-day.js` — POST `/api/analyze-day`
+- `api/analyze-wave.js` — POST `/api/analyze-wave`
+- `api/telegram.js` — Telegram WebApp helper/интеграция (если используется)
 
-## Запуск локально (только фронт)
+## Локальный запуск (frontend)
 
-Приложение использует относительные `*.jsx` файлы и запросы на `/api/...`, поэтому лучше открывать не через `file://`, а через локальный HTTP‑сервер.
+Не открывайте через `file://` — нужен локальный HTTP‑сервер.
 
-Вариант 1 (Python):
+Python:
 
 ```bash
 python -m http.server 8000
@@ -38,32 +47,30 @@ python -m http.server 8000
 
 Открыть: `http://localhost:8000`
 
-Вариант 2 (Node):
+Node:
 
 ```bash
 npx serve .
 ```
 
-Важно: в этом режиме запросы к `/api/analyze-day` и `/api/analyze-wave` не будут работать (нечему их обслуживать), если вы не запускаете serverless‑окружение.
+Важно: без деплоя `api/` запросы к `/api/analyze-day` и `/api/analyze-wave` работать не будут.
 
-## Запуск API / деплой
+## API (деплой)
 
-Папка `api/` выглядит как serverless‑функции (типично для Vercel). При деплое на платформу, которая поддерживает такой формат, роуты будут доступны как:
+Папка `api/` рассчитана на serverless‑деплой. После деплоя доступны:
 
-- `POST /api/analyze-day`
-- `POST /api/analyze-wave`
+- `POST /api/analyze-day` — принимает `{ dayData }`, возвращает `{ advice }` (Markdown)
+- `POST /api/analyze-wave` — принимает `{ waveDays }`, возвращает `{ analysis }` (Markdown)
 
 ### Переменные окружения
-
-Для работы ИИ‑анализа нужно добавить переменную окружения:
 
 - `CLAUDE_API_KEY` — ключ Anthropic
 
 ## Supabase
 
-Фронт использует Supabase JS клиент и сохраняет данные в таблицу `user_days`.
+Данные сохраняются в таблицу `user_days`.
 
-Минимально ожидаемые поля (по коду сохранения):
+Минимально ожидаемые поля:
 
 - `user_id` (string)
 - `date` (string/DATE)
@@ -73,8 +80,13 @@ npx serve .
 - `energy`, `resonance`, `action`, `project`, `insight` (string)
 - `notes` (string)
 
-Примечание: если у вас включён RLS, потребуется настроить политики доступа так, чтобы записи были доступны для чтения/записи (в текущей реализации используется локальный `user_id` из `localStorage`).
+Про идентификацию пользователя: используется `user_id` из `localStorage`. Если включён RLS — настройте политики, чтобы чтение/запись работали для этой модели.
 
-## Примечание по безопасности
+## Telegram WebApp
 
-Сейчас в репозитории есть чувствительные данные, которые обычно выносят в переменные окружения (например, ключи/токены). Для публичного репозитория это стоит обязательно пересмотреть.
+- Для тактильной отдачи используется `window.Telegram.WebApp.HapticFeedback.impactOccurred('light')`.
+- В UI это вызывается через безопасный хелпер `window.tgHapticLight()`.
+
+## Безопасность
+
+Перед публикацией репозитория проверьте, что секреты (ключи/токены/URL) вынесены в переменные окружения и не лежат в исходниках.

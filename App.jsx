@@ -24,20 +24,99 @@ const getUserId = () => {
   return id;
 };
 
+const pad2 = (n) => String(n).padStart(2, '0');
+const formatDateLocal = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+const isLeapYear = (y) => (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+const leapYearsBeforeYear = (y) => {
+  const n = y - 1;
+  if (n < 0) return 0;
+  return Math.floor(n / 4) - Math.floor(n / 100) + Math.floor(n / 400);
+};
+const leapDaysBeforeDate = (date) => {
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  // Count Feb 29 that happened strictly before this date.
+  return leapYearsBeforeYear(y) + (isLeapYear(y) && m > 2 ? 1 : 0);
+};
+
+// Calculate Julian Day Number from Gregorian date
+const gregorianToJulianDay = (date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+
+  return (
+    day +
+    Math.floor((153 * m + 2) / 5) +
+    365 * y +
+    Math.floor(y / 4) -
+    Math.floor(y / 100) +
+    Math.floor(y / 400) -
+    32045
+  );
+};
+
+// Calculate Long Count from Julian Day (GMT correlation: 584283)
+const julianDayToLongCount = (jdn) => {
+  const GMT_CORRELATION = 584283;
+  const daysSinceCreation = jdn - GMT_CORRELATION;
+
+  const baktun = Math.floor(daysSinceCreation / 144000);
+  const katun = Math.floor((daysSinceCreation % 144000) / 7200);
+  const tun = Math.floor((daysSinceCreation % 7200) / 360);
+  const winal = Math.floor((daysSinceCreation % 360) / 20);
+  const kin = ((daysSinceCreation % 20) + 20) % 20;
+
+  return { baktun, katun, tun, winal, kin, total: daysSinceCreation };
+};
+
+// Calculate Tzolkin from Long Count
+const longCountToTzolkin = (longCount) => {
+  const totalDays = longCount.total;
+  const tzolkinPosition = ((totalDays % 260) + 260) % 260;
+
+  const tone = (tzolkinPosition % 13) + 1;
+  const seal = tzolkinPosition % 20;
+  const kin = tzolkinPosition + 1;
+
+  return { kin, tone, seal };
+};
+
 const calculateKin = (dateStr) => {
-  const date = new Date(dateStr);
-  const baseDate = new Date('1982-03-05');
-  const baseKin = 22;
-  const daysDiff = Math.floor((date - baseDate) / (1000 * 60 * 60 * 24));
-  const kin = ((baseKin + daysDiff - 1) % 260) + 1;
-  const tone = ((kin - 1) % 13) + 1;
-  const seal = ((kin - 1) % 20);
+  const date = new Date(dateStr + 'T00:00:00');
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+
+  const isLeapDay = m === 2 && d === 29;
+  const effectiveDate = isLeapDay ? new Date(y, 1, 28) : date;
+
+  const adjustedSerial = (dt) => gregorianToJulianDay(dt) - leapDaysBeforeDate(dt);
+
+  // Anchor to match your reference screenshots:
+  // 2026-01-14 => Kin 36 (Tone 10, Seal 16 Warrior)
+  const anchorDate = new Date('2026-01-14T00:00:00');
+  const anchorKin = 36;
+  const anchorSerial = adjustedSerial(anchorDate);
+  const serial = adjustedSerial(effectiveDate);
+
+  let pos = (anchorKin - 1 + (serial - anchorSerial)) % 260;
+  pos = (pos + 260) % 260;
+
+  const kin = pos + 1;
+  const tone = (pos % 13) + 1;
+  const seal = (pos % 20);
   return { kin, tone, seal };
 };
 
 const TzolkinTracker = () => {
-  const [today] = useState(() => new Date().toISOString().split('T')[0]);
-  const [todayKin, setTodayKin] = useState(() => calculateKin(today));
+  const [selectedDate, setSelectedDate] = useState(() => formatDateLocal(new Date()));
+  const [todayKin, setTodayKin] = useState(() => calculateKin(selectedDate));
   const [waveData, setWaveData] = useState({});
   const [showDetails, setShowDetails] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('home');
@@ -119,10 +198,6 @@ const TzolkinTracker = () => {
   };
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const kinData = calculateKin(today);
-    setTodayKin(kinData);
-
     const loadData = async () => {
       try {
         const userId = getUserId();
@@ -136,13 +211,10 @@ const TzolkinTracker = () => {
 
         const waveObj = {};
         data.forEach(row => {
-          waveObj[row.date] = row;
+          const kinData = calculateKin(row.date);
+          waveObj[row.date] = { ...row, ...kinData };
         });
         setWaveData(waveObj);
-
-        if (waveObj[today]) {
-          setTodayAnswers(waveObj[today]);
-        }
       } catch (e) {
         console.log('Ошибка загрузки:', e);
       }
@@ -151,13 +223,40 @@ const TzolkinTracker = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    const kinData = calculateKin(selectedDate);
+    setTodayKin(kinData);
+
+    const entry = waveData[selectedDate];
+    if (entry) {
+      setTodayAnswers({
+        energy: entry.energy ?? null,
+        resonance: entry.resonance ?? null,
+        action: entry.action ?? null,
+        project: entry.project ?? null,
+        insight: entry.insight ?? null,
+        notes: entry.notes ?? ''
+      });
+    } else {
+      setTodayAnswers({
+        energy: null,
+        resonance: null,
+        action: null,
+        project: null,
+        insight: null,
+        notes: ''
+      });
+    }
+
+    setDayAdvice('');
+  }, [selectedDate, waveData]);
+
   const saveAnswers = async () => {
-    const today = new Date().toISOString().split('T')[0];
     const userId = getUserId();
 
     const dataToSave = {
       user_id: userId,
-      date: today,
+      date: selectedDate,
       kin: todayKin.kin,
       tone: todayKin.tone,
       seal: todayKin.seal,
@@ -171,7 +270,7 @@ const TzolkinTracker = () => {
 
       if (error) throw error;
 
-      setWaveData({ ...waveData, [today]: dataToSave });
+      setWaveData({ ...waveData, [selectedDate]: dataToSave });
       alert('✓ Сохранено!');
     } catch (e) {
       console.error('Ошибка:', e);
@@ -234,7 +333,14 @@ const TzolkinTracker = () => {
   const updateDay = async (date, field, value) => {
     const updatedData = { ...waveData };
     if (!updatedData[date]) {
-      updatedData[date] = { user_id: getUserId(), date };
+      const kinData = calculateKin(date);
+      updatedData[date] = {
+        user_id: getUserId(),
+        date,
+        kin: kinData.kin,
+        tone: kinData.tone,
+        seal: kinData.seal
+      };
     }
     updatedData[date][field] = value;
 
@@ -255,9 +361,16 @@ const TzolkinTracker = () => {
 
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'fullCalendar':
+        return <FullCalendarScreen
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          seals={seals}
+          tones={tones}
+        />;
       case 'wave':
         return <CurrentWave
-          today={today}
+          today={selectedDate}
           todayKin={todayKin}
           seals={seals}
           tones={tones}
@@ -276,6 +389,7 @@ const TzolkinTracker = () => {
       case 'history':
         return <WaveHistoryScreen
           waveData={waveData}
+          selectedDate={selectedDate}
           setShowWaveHistory={() => { }}
           setCurrentWaveOffset={setCurrentWaveOffset}
           setCurrentScreen={setCurrentScreen}
@@ -283,6 +397,7 @@ const TzolkinTracker = () => {
       default:
         return (
           <HomeScreen
+            selectedDate={selectedDate}
             todayKin={todayKin}
             seals={seals}
             tones={tones}

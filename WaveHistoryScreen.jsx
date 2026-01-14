@@ -1,12 +1,12 @@
-const WaveHistoryScreen = ({ waveData, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen }) => {
+const WaveHistoryScreen = ({ waveData, selectedDate, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen }) => {
   const [view, setView] = useState('current');
-  const currentDate = new Date().toISOString().split('T')[0];
+  const currentDate = selectedDate || new Date().toISOString().split('T')[0];
 
   // Получить список всех волн
   const getWaves = () => {
     try {
       const waves = [];
-      const today = new Date();
+      const today = new Date(currentDate + 'T00:00:00');
 
       // Начинаем с текущей волны (offset 0) и идем назад
       for (let offset = 0; offset >= -10; offset--) { // Показываем последние 10 волн
