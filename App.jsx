@@ -521,7 +521,7 @@ const TzolkinTracker = () => {
 
   if (currentScreen === 'tutorial') {
     return (
-      <div className="min-h-screen text-white">
+      <div className="min-h-screen text-white fade-in">
         <TutorialScreen seals={seals} tones={tones} setShowTutorial={() => setCurrentScreen('home')} />
         <BottomNavigation currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
       </div>
@@ -529,7 +529,7 @@ const TzolkinTracker = () => {
   }
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-white fade-in">
       {renderScreen()}
       <BottomNavigation currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
     </div>

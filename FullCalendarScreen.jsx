@@ -1,8 +1,30 @@
 const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => {
+    const { useState } = React;
+    const [infoModal, setInfoModal] = useState(null);
+
     const pad2 = (n) => String(n).padStart(2, '0');
     const formatDateLocal = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
     const toDateObj = (dateStr) => new Date(dateStr + 'T00:00:00');
+
+    const calendarInfo = {
+        julianDay: {
+            title: 'Julian Day Number',
+            description: 'Юлианский день — это непрерывный счёт дней с полудня 1 января 4713 года до н. э. по юлианскому календарю. Это астрономический стандарт для отслеживания времени, широко используемый в науке. Каждый день имеет уникальный номер, что упрощает расчёты между датами и эпохами. Система Julian Day не зависит от часовых поясов и календарных реформ, что делает её универсальным инструментом для астрономов, историков и математиков.',
+        },
+        thirteenMoon: {
+            title: '13 Лун (Dreamspell)',
+            description: 'Календарь 13 Лун — это современная интерпретация календаря майя, созданная Хосе Аргуэльесом. Год делится на 13 месяцев (лун) по 28 дней каждый, итого 364 дня, плюс один «День Вне Времени» 25 июля. Новый год начинается 26 июля. Эта система синхронизирована с природными циклами и лунным ритмом, предлагая гармоничный способ отслеживания времени. Календарь помогает настроиться на природные ритмы и отказаться от искусственного 12-месячного григорианского календаря.',
+        },
+        longCount: {
+            title: 'Long Count (Длинный счёт)',
+            description: 'Long Count — это система летоисчисления майя, отсчитывающая дни с мифической даты создания мира (11 августа 3114 года до н. э.). Записывается в формате baktun.katun.tun.winal.kin. Один кин = 1 день, winal = 20 дней, tun = 360 дней, katun = 7200 дней, baktun = 144000 дней. Эта система позволяет точно датировать исторические события на протяжении тысячелетий. Long Count использовался майя для записи важных дат и астрономических наблюдений.',
+        },
+        tzolkin: {
+            title: 'Цолькин (Священный календарь)',
+            description: 'Цолькин — это 260-дневный священный календарь майя, состоящий из 20 солнечных печатей и 13 тонов. Каждый день имеет уникальную комбинацию тона (1-13) и печати (глифа). Это основа духовной и ритуальной жизни майя. Цолькин синхронизирован с циклами беременности человека (260 дней), астрономическими событиями и природными ритмами. Каждая комбинация тона и печати несёт особую энергию и качества, влияющие на события и решения.',
+        }
+    };
 
     const isLeapYear = (y) => (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
     const leapYearsBeforeYear = (y) => {
@@ -178,42 +200,46 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
     });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4 pb-24">
+        <div className="min-h-screen text-white p-4 pb-32 fade-in">
             <div className="max-w-2xl mx-auto">
                 <div
-                    className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                    className="rounded-3xl glass-card-strong p-6"
                     style={{
-                        borderColor: hexToRgba(accent, 0.22),
-                        backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.18)}, transparent 55%)`
+                        borderColor: hexToRgba(accent, 0.25),
+                        backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.18)}, transparent 60%)`,
+                        boxShadow: `0 0 30px ${hexToRgba(accent, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
                     }}
                 >
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <div className="text-lg font-semibold text-white">Калькулятор</div>
-                            <div className="mt-1 text-sm text-white/60">Julian Day, Long Count и Цолькин</div>
+                            <div className="text-xl font-bold tracking-wide text-white">Калькулятор</div>
+                            <div className="mt-1.5 text-sm text-white/50 font-light">Julian Day, Long Count и Цолькин</div>
                         </div>
-                        <div className="text-white/60">
+                        <div className="text-cyan-400/80">
                             {window.LucideReact?.CalendarDays ? (
-                                <window.LucideReact.CalendarDays size={20} strokeWidth={1.5} />
+                                <window.LucideReact.CalendarDays size={24} strokeWidth={2} />
                             ) : null}
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-2 items-stretch">
+                <div className="mt-6 grid grid-cols-3 gap-3 items-stretch">
                     <button
                         type="button"
                         onClick={() => {
                             window.tgHapticLight?.();
                             changeDate(-1);
                         }}
-                        className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
-                        style={{ borderColor: hexToRgba(accent, 0.16) }}
+                        className="min-h-[56px] rounded-3xl glass-card px-4 py-3 text-white/90 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.20),
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                        }}
                         aria-label="Предыдущий день"
                     >
                         <span className="inline-flex items-center justify-center">
                             {window.LucideReact?.ChevronLeft ? (
-                                <window.LucideReact.ChevronLeft size={20} strokeWidth={1.5} />
+                                <window.LucideReact.ChevronLeft size={22} strokeWidth={2} />
                             ) : (
                                 '◀'
                             )}
@@ -221,10 +247,11 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                     </button>
 
                     <div
-                        className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-center backdrop-blur-xl"
+                        className="min-h-[56px] rounded-3xl glass-card-strong px-4 py-3 text-center"
                         style={{
-                            borderColor: hexToRgba(accent, 0.18),
-                            backgroundImage: `radial-gradient(700px circle at 50% 0%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+                            borderColor: hexToRgba(accent, 0.30),
+                            backgroundImage: `radial-gradient(700px circle at 50% 0%, ${hexToRgba(accent, 0.15)}, transparent 70%)`,
+                            boxShadow: `0 0 20px ${hexToRgba(accent, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
                         }}
                     >
                         <input
@@ -234,9 +261,9 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                                 window.tgHapticLight?.();
                                 setSelectedDate(e.target.value);
                             }}
-                            className="w-full bg-transparent text-center text-sm text-white/90 outline-none"
+                            className="w-full bg-transparent text-center text-sm font-semibold text-white/90 outline-none"
                         />
-                        <div className="mt-1 text-[11px] text-white/55">{dateLabel}</div>
+                        <div className="mt-1 text-[11px] text-white/50">{dateLabel}</div>
                     </div>
 
                     <button
@@ -245,13 +272,16 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                             window.tgHapticLight?.();
                             changeDate(1);
                         }}
-                        className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
-                        style={{ borderColor: hexToRgba(accent, 0.16) }}
+                        className="min-h-[56px] rounded-3xl glass-card px-4 py-3 text-white/90 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.20),
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                        }}
                         aria-label="Следующий день"
                     >
                         <span className="inline-flex items-center justify-center">
                             {window.LucideReact?.ChevronRight ? (
-                                <window.LucideReact.ChevronRight size={20} strokeWidth={1.5} />
+                                <window.LucideReact.ChevronRight size={22} strokeWidth={2} />
                             ) : (
                                 '▶'
                             )}
@@ -265,60 +295,107 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                         window.tgHapticLight?.();
                         setToday();
                     }}
-                    className="mt-3 w-full min-h-[50px] rounded-3xl border bg-white/5 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
-                    style={{ borderColor: hexToRgba(accent, 0.16) }}
+                    className="mt-4 w-full min-h-[56px] rounded-3xl px-4 py-4 text-sm font-bold text-white transition-all duration-300 hover:opacity-90 active:scale-[0.98] pulse-glow"
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(14, 165, 233, 0.25))',
+                        border: '1.5px solid rgba(6, 182, 212, 0.5)',
+                        boxShadow: '0 0 30px rgba(6, 182, 212, 0.35), 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    }}
                 >
                     <span className="inline-flex items-center justify-center gap-2">
                         {window.LucideReact?.Calendar ? (
-                            <window.LucideReact.Calendar size={20} strokeWidth={1.5} />
+                            <window.LucideReact.Calendar size={22} strokeWidth={2} />
                         ) : null}
                         Сегодня
                     </span>
                 </button>
 
-                <div className="mt-4 space-y-3">
+                <div className="mt-6 space-y-4">
                     <div
-                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                        className="rounded-3xl glass-card-strong p-6"
                         style={{
-                            borderColor: hexToRgba(accent, 0.14),
-                            backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+                            borderColor: hexToRgba(accent, 0.18),
+                            backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.14)}, transparent 65%)`,
+                            boxShadow: `0 0 20px ${hexToRgba(accent, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
                         }}
                     >
-                        <div className="text-sm font-semibold text-white">Julian Day</div>
-                        <div className="mt-2 text-3xl font-semibold text-white">{jdn}</div>
-                        <div className="mt-1 text-sm text-white/60">Астрономический счёт дней</div>
-                    </div>
-
-                    <div
-                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
-                        style={{
-                            borderColor: hexToRgba(accent, 0.14),
-                            backgroundImage: `radial-gradient(900px circle at 90% 0%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
-                        }}
-                    >
-                        <div className="text-sm font-semibold text-white">13 Лун</div>
-                        {moon13.isDayOutOfTime ? (
-                            <div className="mt-2 text-2xl font-semibold text-white">День Вне Времени</div>
-                        ) : (
-                            <div className="mt-2 text-2xl font-semibold text-white">
-                                {moon13.day} • {moon13.moonName} ({moon13.moon})
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <div className="text-sm font-bold text-white tracking-wide">Julian Day</div>
+                                <div className="mt-2 text-3xl font-bold text-white">{jdn}</div>
+                                <div className="mt-1 text-sm text-white/60 font-light">Астрономический счёт дней</div>
                             </div>
-                        )}
-                        <div className="mt-1 text-sm text-white/60">Кин: {moon13.dayOfYear} • Год начинается 26 июля • Год: {moon13.yearStartYear}/{moon13.yearStartYear + 1}</div>
+                            <button
+                                onClick={() => {
+                                    window.tgHapticLight?.();
+                                    setInfoModal('julianDay');
+                                }}
+                                className="flex-shrink-0 w-8 h-8 rounded-full glass-card flex items-center justify-center text-cyan-400/70 hover:text-cyan-400 hover:bg-white/10 transition-all duration-300"
+                                style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}
+                            >
+                                {window.LucideReact?.Info ? <window.LucideReact.Info size={16} strokeWidth={2} /> : 'i'}
+                            </button>
+                        </div>
                     </div>
 
                     <div
-                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                        className="rounded-3xl glass-card-strong p-6"
                         style={{
-                            borderColor: hexToRgba(accent, 0.14),
-                            backgroundImage: `radial-gradient(900px circle at 10% 100%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+                            borderColor: hexToRgba(accent, 0.18),
+                            backgroundImage: `radial-gradient(900px circle at 90% 0%, ${hexToRgba(accent, 0.14)}, transparent 65%)`,
+                            boxShadow: `0 0 20px ${hexToRgba(accent, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
                         }}
                     >
-                        <div className="text-sm font-semibold text-white">Long Count</div>
-                        <div className="mt-2 text-2xl font-semibold text-white">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <div className="text-sm font-bold text-white tracking-wide">13 Лун</div>
+                                {moon13.isDayOutOfTime ? (
+                                    <div className="mt-2 text-2xl font-bold text-white">День Вне Времени</div>
+                                ) : (
+                                    <div className="mt-2 text-2xl font-bold text-white">
+                                        {moon13.day} • {moon13.moonName} ({moon13.moon})
+                                    </div>
+                                )}
+                                <div className="mt-1 text-sm text-white/60 font-light">Кин: {moon13.dayOfYear} • Год начинается 26 июля • Год: {moon13.yearStartYear}/{moon13.yearStartYear + 1}</div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    window.tgHapticLight?.();
+                                    setInfoModal('thirteenMoon');
+                                }}
+                                className="flex-shrink-0 w-8 h-8 rounded-full glass-card flex items-center justify-center text-cyan-400/70 hover:text-cyan-400 hover:bg-white/10 transition-all duration-300"
+                                style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}
+                            >
+                                {window.LucideReact?.Info ? <window.LucideReact.Info size={16} strokeWidth={2} /> : 'i'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        className="rounded-3xl glass-card-strong p-6"
+                        style={{
+                            borderColor: hexToRgba(accent, 0.18),
+                            backgroundImage: `radial-gradient(900px circle at 10% 100%, ${hexToRgba(accent, 0.12)}, transparent 65%)`,
+                            boxShadow: `0 0 20px ${hexToRgba(accent, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
+                        }}
+                    >
+                        <div className="flex items-start justify-between mb-3">
+                            <div className="text-sm font-bold text-white tracking-wide">Long Count</div>
+                            <button
+                                onClick={() => {
+                                    window.tgHapticLight?.();
+                                    setInfoModal('longCount');
+                                }}
+                                className="flex-shrink-0 w-8 h-8 rounded-full glass-card flex items-center justify-center text-cyan-400/70 hover:text-cyan-400 hover:bg-white/10 transition-all duration-300"
+                                style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}
+                            >
+                                {window.LucideReact?.Info ? <window.LucideReact.Info size={16} strokeWidth={2} /> : 'i'}
+                            </button>
+                        </div>
+                        <div className="text-2xl font-bold text-white mb-4">
                             {longCount.baktun}.{longCount.katun}.{longCount.tun}.{longCount.winal}.{longCount.kin}
                         </div>
-                        <div className="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                        <div className="flex gap-2 overflow-x-auto pb-2 text-sm">
                             {[
                                 ['baktun', longCount.baktun],
                                 ['katun', longCount.katun],
@@ -326,52 +403,117 @@ const FullCalendarScreen = ({ selectedDate, setSelectedDate, seals, tones }) => 
                                 ['winal', longCount.winal],
                                 ['kin', longCount.kin]
                             ].map(([label, value]) => (
-                                <div key={label} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
-                                    <div className="text-[11px] text-white/55">{label}</div>
-                                    <div className="mt-1 font-semibold text-white">{value}</div>
+                                <div key={label} className="flex-shrink-0 rounded-2xl glass-card p-3 text-center min-w-[80px]" style={{
+                                    boxShadow: `0 2px 10px ${hexToRgba(accent, 0.1)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+                                }}>
+                                    <div className="text-[11px] text-white/50 font-medium uppercase">{label}</div>
+                                    <div className="mt-1 font-bold text-white text-lg">{value}</div>
                                 </div>
                             ))}
                         </div>
-                        <div className="mt-3 text-sm text-white/60">Дней с начала эры: {longCount.total.toLocaleString()}</div>
+                        <div className="mt-3 text-sm text-white/60 font-light">Дней с начала эры: {longCount.total.toLocaleString()}</div>
                     </div>
 
                     <div
-                        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+                        className="rounded-3xl glass-card-strong p-6"
                         style={{
-                            borderColor: hexToRgba(accent, 0.18),
-                            backgroundImage: `radial-gradient(900px circle at 90% 100%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+                            borderColor: hexToRgba(accent, 0.25),
+                            backgroundImage: `radial-gradient(900px circle at 90% 100%, ${hexToRgba(accent, 0.15)}, transparent 65%)`,
+                            boxShadow: `0 0 25px ${hexToRgba(accent, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
                         }}
                     >
-                        <div className="text-sm font-semibold text-white">Цолькин</div>
-                        <div className="mt-2 text-3xl font-semibold" style={{ color: seal?.color || undefined }}>
+                        <div className="flex items-start justify-between mb-3">
+                            <div className="text-sm font-bold text-white tracking-wide">Цолькин</div>
+                            <button
+                                onClick={() => {
+                                    window.tgHapticLight?.();
+                                    setInfoModal('tzolkin');
+                                }}
+                                className="flex-shrink-0 w-8 h-8 rounded-full glass-card flex items-center justify-center text-cyan-400/70 hover:text-cyan-400 hover:bg-white/10 transition-all duration-300"
+                                style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}
+                            >
+                                {window.LucideReact?.Info ? <window.LucideReact.Info size={16} strokeWidth={2} /> : 'i'}
+                            </button>
+                        </div>
+                        <div className="text-3xl font-bold" style={{ color: seal?.color || undefined }}>
                             {tzolkin.tone} {seal?.name || '—'}
                         </div>
                         {tzolkin.isLeapDay ? (
-                            <div className="mt-1 text-xs text-white/50">29 февраля: високосный день вне счёта (кин не сдвигается)</div>
+                            <div className="mt-2 text-xs text-white/50 font-light">29 февраля: високосный день вне счёта (кин не сдвигается)</div>
                         ) : null}
-                        <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
-                                <div className="text-[11px] text-white/55">Тон</div>
-                                <div className="mt-1 font-semibold text-white">{tzolkin.tone}</div>
+                        <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                            <div className="rounded-2xl glass-card p-3 text-center" style={{
+                                boxShadow: `0 2px 10px ${hexToRgba(accent, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+                            }}>
+                                <div className="text-[11px] text-white/50 font-medium">Тон</div>
+                                <div className="mt-1 font-bold text-white">{tzolkin.tone}</div>
                             </div>
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
-                                <div className="text-[11px] text-white/55">Печать</div>
-                                <div className="mt-1 font-semibold text-white">{tzolkin.glyph + 1}</div>
+                            <div className="rounded-2xl glass-card p-3 text-center" style={{
+                                boxShadow: `0 2px 10px ${hexToRgba(accent, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+                            }}>
+                                <div className="text-[11px] text-white/50 font-medium">Печать</div>
+                                <div className="mt-1 font-bold text-white">{tzolkin.glyph + 1}</div>
                             </div>
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
-                                <div className="text-[11px] text-white/55">Кин</div>
-                                <div className="mt-1 font-semibold text-white">{tzolkin.kin}</div>
+                            <div className="rounded-2xl glass-card p-3 text-center" style={{
+                                boxShadow: `0 2px 10px ${hexToRgba(accent, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+                            }}>
+                                <div className="text-[11px] text-white/50 font-medium">Кин</div>
+                                <div className="mt-1 font-bold text-white">{tzolkin.kin}</div>
                             </div>
                         </div>
                         {tone ? (
-                            <div className="mt-3 text-sm text-white/60">Тон: {tone.n} • {tone.name}</div>
+                            <div className="mt-4 text-sm text-white/60 font-light">Тон: {tone.n} • {tone.name}</div>
                         ) : null}
                     </div>
 
-                    <div className="text-center text-xs text-white/45">
+                    <div className="text-center text-xs text-white/40 font-light">
                         GMT Correlation: 584283
                     </div>
                 </div>
+
+                {/* Info Modal */}
+                {infoModal && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        style={{ background: 'rgba(5, 7, 10, 0.85)', backdropFilter: 'blur(8px)' }}
+                        onClick={() => setInfoModal(null)}
+                    >
+                        <div
+                            className="max-w-lg w-full rounded-3xl glass-card-strong p-6 fade-in"
+                            style={{
+                                borderColor: 'rgba(6, 182, 212, 0.3)',
+                                backgroundImage: 'radial-gradient(900px circle at 50% 0%, rgba(6, 182, 212, 0.15), transparent 70%)',
+                                boxShadow: '0 0 40px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-start justify-between mb-4">
+                                <h3 className="text-lg font-bold text-white tracking-wide">{calendarInfo[infoModal]?.title}</h3>
+                                <button
+                                    onClick={() => setInfoModal(null)}
+                                    className="flex-shrink-0 w-8 h-8 rounded-full glass-card flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
+                                    style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}
+                                >
+                                    {window.LucideReact?.X ? <window.LucideReact.X size={18} strokeWidth={2} /> : '×'}
+                                </button>
+                            </div>
+                            <p className="text-sm text-white/80 leading-relaxed font-light">
+                                {calendarInfo[infoModal]?.description}
+                            </p>
+                            <button
+                                onClick={() => setInfoModal(null)}
+                                className="mt-6 w-full min-h-[48px] rounded-3xl px-4 py-3 text-sm font-bold text-white transition-all duration-300 hover:opacity-90 active:scale-[0.98]"
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(14, 165, 233, 0.25))',
+                                    border: '1.5px solid rgba(6, 182, 212, 0.5)',
+                                    boxShadow: '0 0 20px rgba(6, 182, 212, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                                }}
+                            >
+                                Закрыть
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

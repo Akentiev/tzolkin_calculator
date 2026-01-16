@@ -90,49 +90,81 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
 
     return (
       <div
-        className="w-full h-32 rounded-3xl border bg-white/5 p-4 backdrop-blur-xl"
+        className="w-full h-40 rounded-3xl glass-card p-5"
         style={{
-          borderColor: hexToRgba(accent, 0.18),
-          backgroundImage: `radial-gradient(900px circle at 10% 0%, ${hexToRgba(accent, 0.12)}, transparent 60%)`
+          borderColor: hexToRgba(accent, 0.25),
+          backgroundImage: `radial-gradient(800px circle at 50% 0%, ${hexToRgba(accent, 0.15)}, transparent 70%)`,
+          boxShadow: `0 0 30px ${hexToRgba(accent, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
         }}
       >
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={accent} stopOpacity="0.25" />
-              <stop offset="50%" stopColor={accent} stopOpacity="0.55" />
-              <stop offset="100%" stopColor={accent} stopOpacity="0.25" />
+              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.5" />
+              <stop offset="50%" stopColor="#0ea5e9" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.5" />
             </linearGradient>
+            <filter id="neonGlow">
+              <feGaussianBlur stdDeviation="1" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
           {/* Grid lines */}
-          {[0, 25, 50, 75, 100].map(y => (
-            <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="#374151" strokeWidth="0.2" />
+          {[20, 40, 60, 80].map(y => (
+            <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.3" />
           ))}
 
-          {/* Wave line */}
+          {/* Glow effect under line */}
           <polyline
             points={points}
             fill="none"
             stroke="url(#waveGradient)"
-            strokeWidth="2"
+            strokeWidth="4"
             strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.3"
+            filter="url(#neonGlow)"
           />
 
-          {/* Points */}
+          {/* Main Wave line */}
+          <polyline
+            points={points}
+            fill="none"
+            stroke="url(#waveGradient)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            filter="url(#neonGlow)"
+          />
+
+          {/* Points with neon glow */}
           {energyData.map((e, i) => {
-            if (e === null) return null;
+            if (e === 0) return null;
             const x = (i / 12) * 100;
             const y = 100 - (e / maxEnergy) * 80;
             return (
-              <circle
-                key={i}
-                cx={x}
-                cy={y}
-                r="2"
-                fill={accent}
-                className="drop-shadow-lg"
-              />
+              <g key={i}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="3.5"
+                  fill="#06b6d4"
+                  opacity="0.3"
+                  filter="url(#neonGlow)"
+                />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="2"
+                  fill="#ffffff"
+                  stroke="#06b6d4"
+                  strokeWidth="1"
+                />
+              </g>
             );
           })}
 
@@ -143,10 +175,11 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
               <text
                 key={i}
                 x={x}
-                y="95"
-                fontSize="3"
-                fill="#9CA3AF"
+                y="96"
+                fontSize="3.5"
+                fill="rgba(255, 255, 255, 0.4)"
                 textAnchor="middle"
+                fontWeight="500"
               >
                 {i + 1}
               </text>
@@ -195,22 +228,42 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
 
     return (
       <div
-        className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+        className="rounded-3xl glass-card p-5 transition-all duration-300 hover:scale-[1.01]"
         style={{
-          borderColor: isToday ? hexToRgba(accent, 0.45) : 'rgba(255,255,255,0.10)',
-          backgroundImage: `radial-gradient(900px circle at ${cornerPos}, ${hexToRgba(accent, isToday ? 0.16 : 0.10)}, transparent 60%)`,
-          boxShadow: isToday ? `0 0 0 1px ${hexToRgba(accent, 0.22)}` : undefined
+          borderColor: isToday ? hexToRgba(accent, 0.5) : 'rgba(255,255,255,0.12)',
+          backgroundImage: `radial-gradient(900px circle at ${cornerPos}, ${hexToRgba(accent, isToday ? 0.20 : 0.10)}, transparent 60%)`,
+          boxShadow: isToday
+            ? `0 0 25px ${hexToRgba(accent, 0.25)}, 0 0 0 1.5px ${hexToRgba(accent, 0.3)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
+            : '0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
         }}
       >
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-sm text-white/60">День {day.dayNumber}</div>
-            {/* <div className="mt-1 text-white font-semibold">{day.tone.name}</div> */}
-            <div className="mt-1 text-xs font-medium" style={{ color: day.sealColor }}>{day.seal.name}</div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-medium text-white/50">День {day.dayNumber}</div>
+              {isToday && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">Сегодня</span>
+              )}
+            </div>
+            <div className="mt-1.5 text-sm font-semibold" style={{ color: day.sealColor }}>{day.seal.name}</div>
+            <div className="mt-0.5 text-xs text-white/50">{day.tone?.name || ''}</div>
           </div>
-          <div className="flex flex-col items-end min-w-[70px]">
-            <div className="text-xs text-right text-white/70 mb-1" style={{ minWidth: '60px' }}>{phase}</div>
-            <div className="text-lg font-bold text-white/90">{energyText}</div>
+          <div className="flex flex-col items-end min-w-[80px]">
+            <div
+              className="text-xs px-2 py-1 rounded-lg mb-2 font-medium"
+              style={{
+                background: `linear-gradient(135deg, ${hexToRgba(accent, 0.15)}, ${hexToRgba(accent, 0.08)})`,
+                border: `1px solid ${hexToRgba(accent, 0.25)}`,
+                color: accent
+              }}
+            >
+              {phase}
+            </div>
+            <div className="text-2xl font-bold" style={{
+              color: energyValue >= 4 ? '#10b981' : energyValue >= 3 ? '#fbbf24' : '#ef4444'
+            }}>
+              {energyText}
+            </div>
           </div>
         </div>
 
@@ -253,42 +306,48 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4 pb-24">
+    <div className="min-h-screen text-white p-4 pb-32 fade-in">
 
       {/* Header */}
-      <div className="max-w-2xl mx-auto mb-4">
+      <div className="max-w-2xl mx-auto mb-6">
         <div
-          className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
+          className="rounded-3xl glass-card-strong p-6"
           style={{
-            borderColor: hexToRgba(accent, 0.18),
-            backgroundImage: `radial-gradient(900px circle at 0% 0%, ${hexToRgba(accent, 0.14)}, transparent 55%)`
+            borderColor: hexToRgba(accent, 0.25),
+            backgroundImage: `radial-gradient(900px circle at 0% 0%, ${hexToRgba(accent, 0.18)}, transparent 60%)`,
+            boxShadow: `0 0 30px ${hexToRgba(accent, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
           }}
         >
           <div className="flex items-center justify-between gap-3">
-            <div className="text-lg font-semibold text-white">Волны Цолькин</div>
-            <div className="text-white/60">
+            <div>
+              <div className="text-xl font-bold tracking-wide text-white">Волны Цолькин</div>
+              <div className="mt-1.5 text-sm text-white/50 font-light">Дневник паттернов энергии</div>
+            </div>
+            <div className="text-cyan-400/80">
               {window.LucideReact?.Waves ? (
-                <window.LucideReact.Waves size={20} strokeWidth={1.5} />
+                <window.LucideReact.Waves size={24} strokeWidth={2} />
               ) : null}
             </div>
           </div>
-          <div className="mt-1 text-sm text-white/60">Дневник паттернов энергии</div>
         </div>
       </div>
 
       {/* Wave Navigation */}
-      <div className="max-w-2xl mx-auto mb-4 grid grid-cols-3 gap-2 items-stretch">
+      <div className="max-w-2xl mx-auto mb-6 grid grid-cols-3 gap-3 items-stretch">
         <button
           onClick={() => {
             window.tgHapticLight?.();
             setCurrentWaveOffset(currentWaveOffset - 1);
           }}
-          className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 active:scale-[0.98]"
-          style={{ borderColor: hexToRgba(accent, 0.16) }}
+          className="min-h-[56px] rounded-3xl glass-card px-4 py-3 text-white/90 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+          style={{
+            borderColor: hexToRgba(accent, 0.20),
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          }}
         >
           <span className="inline-flex items-center justify-center">
             {window.LucideReact?.ChevronLeft ? (
-              <window.LucideReact.ChevronLeft size={20} strokeWidth={1.5} />
+              <window.LucideReact.ChevronLeft size={22} strokeWidth={2} />
             ) : (
               '◀'
             )}
@@ -296,14 +355,15 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
         </button>
 
         <div
-          className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-center backdrop-blur-xl"
+          className="min-h-[56px] rounded-3xl glass-card-strong px-4 py-3 text-center"
           style={{
-            borderColor: hexToRgba(accent, 0.18),
-            backgroundImage: `radial-gradient(800px circle at 50% 0%, ${hexToRgba(accent, 0.10)}, transparent 60%)`
+            borderColor: hexToRgba(accent, 0.30),
+            backgroundImage: `radial-gradient(800px circle at 50% 0%, ${hexToRgba(accent, 0.15)}, transparent 70%)`,
+            boxShadow: `0 0 20px ${hexToRgba(accent, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
           }}
         >
-          <div className="text-sm font-semibold text-white">Волна {Math.abs(currentWaveOffset) + 1}</div>
-          <div className="mt-0.5 text-xs text-white/60">{currentWave.startDate}</div>
+          <div className="text-sm font-bold text-white tracking-wide">Волна {Math.abs(currentWaveOffset) + 1}</div>
+          <div className="mt-0.5 text-xs text-white/50">{currentWave.startDate}</div>
         </div>
 
         <button
@@ -312,12 +372,15 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
             setCurrentWaveOffset(currentWaveOffset + 1);
           }}
           disabled={currentWaveOffset >= 0}
-          className="min-h-[50px] rounded-3xl border bg-white/5 px-4 py-3 text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-40 active:scale-[0.98]"
-          style={{ borderColor: hexToRgba(accent, 0.16) }}
+          className="min-h-[56px] rounded-3xl glass-card px-4 py-3 text-white/90 transition-all duration-300 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.95]"
+          style={{
+            borderColor: hexToRgba(accent, 0.20),
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          }}
         >
           <span className="inline-flex items-center justify-center">
             {window.LucideReact?.ChevronRight ? (
-              <window.LucideReact.ChevronRight size={20} strokeWidth={1.5} />
+              <window.LucideReact.ChevronRight size={22} strokeWidth={2} />
             ) : (
               '▶'
             )}
@@ -326,12 +389,12 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
       </div>
 
       {/* Wave Graph */}
-      <div className="max-w-2xl mx-auto mb-4">
+      <div className="max-w-2xl mx-auto mb-6">
         <WaveGraph wave={currentWave} />
       </div>
 
       {/* Days List */}
-      <div className="max-w-2xl mx-auto space-y-3 pb-24">
+      <div className="max-w-2xl mx-auto space-y-4 pb-6">
         {currentWave.days.map((day, i) => (
           <DayCard key={i} day={day} index={i} />
         ))}
