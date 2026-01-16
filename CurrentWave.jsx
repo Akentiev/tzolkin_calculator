@@ -211,13 +211,29 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
           </div>
         </div>
 
-        <textarea
-          value={day.notes}
-          onChange={(e) => updateDayNotes(day.date, e.target.value)}
-          placeholder="Заметки дня..."
-          className="mt-4 w-full rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/90 placeholder:text-white/40 outline-none transition duration-300 focus:bg-white/10"
-          rows="2"
-        />
+        {/* AI summary/events или notes */}
+        {day.data && (day.data.ai_summary || (Array.isArray(day.data.ai_events) && day.data.ai_events.length > 0)) ? (
+          <div className="mt-4">
+            {day.data.ai_summary && (
+              <div className="font-semibold text-white mb-1">{day.data.ai_summary}</div>
+            )}
+            {Array.isArray(day.data.ai_events) && day.data.ai_events.length > 0 && (
+              <ul className="list-disc list-inside text-white/80 text-sm">
+                {day.data.ai_events.map((ev, idx) => (
+                  <li key={idx}>{ev}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : (
+          <textarea
+            value={day.notes}
+            onChange={(e) => updateDayNotes(day.date, e.target.value)}
+            placeholder="Заметки дня..."
+            className="mt-4 w-full rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/90 placeholder:text-white/40 outline-none transition duration-300 focus:bg-white/10"
+            rows="2"
+          />
+        )}
 
         <div className="mt-2 inline-flex items-center gap-2 text-xs text-white/50">
           {window.LucideReact?.Clock ? (
