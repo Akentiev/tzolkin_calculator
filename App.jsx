@@ -337,6 +337,13 @@ const TzolkinTracker = () => {
 
       setWaveData({ ...waveData, [selectedDate]: dataToSave });
 
+      // Обновляем локальный todayAnswers, чтобы ai_summary и ai_events сразу были в стейте
+      setTodayAnswers(prev => ({
+        ...prev,
+        ai_summary: aiSummary,
+        ai_events: aiEvents
+      }));
+
       // Haptic feedback и переход на волну
       window.tgHapticLight?.();
       setCurrentScreen('wave');
