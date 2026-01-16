@@ -30,16 +30,18 @@ const WaveHistory = ({ waveData, showAnalysis, setShowAnalysis, analyzeWaveWithC
       const t = data.tone;
       if (!energyByTone[t]) energyByTone[t] = [];
       if (!actionByTone[t]) actionByTone[t] = [];
-      energyByTone[t].push(data.energy);
+
+      const energyVal = typeof data.energy === 'number' ? data.energy : 0;
+      energyByTone[t].push(energyVal);
       actionByTone[t].push(data.action);
     });
 
     const highEnergyTones = Object.entries(energyByTone)
-      .filter(([_, vals]) => vals.some(v => ['Высокая', 'Подъём'].includes(v)))
+      .filter(([_, vals]) => vals.some(v => v >= 4))
       .map(([t]) => `Тон ${t}`);
 
     const lowEnergyTones = Object.entries(energyByTone)
-      .filter(([_, vals]) => vals.some(v => ['Низкая', 'Апатия', 'Спад'].includes(v)))
+      .filter(([_, vals]) => vals.some(v => v <= 2))
       .map(([t]) => `Тон ${t}`);
 
     return `

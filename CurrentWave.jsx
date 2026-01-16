@@ -20,11 +20,11 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
     try {
       // Используем переданный 'today' для синхронизации с домашним экраном
       const todayDate = new Date(today + 'T00:00:00');
-      // Рассчитываем начало волны: текущая волна начинается 12 дней назад
-      // Каждая предыдущая волна на 13 дней раньше
-      const totalDaysBack = 12 + (Math.max(0, -currentWaveOffset) * 13);
+      // Рассчитываем начало волны на основе тона текущего дня
+      // Если сегодня тон 12, то начало волны = today - 11 дней (чтобы today был 12-м днем)
+      const daysBackToWaveStart = (todayKin.tone - 1) + (Math.max(0, -currentWaveOffset) * 13);
       const waveStartDate = new Date(todayDate);
-      waveStartDate.setDate(waveStartDate.getDate() - totalDaysBack);
+      waveStartDate.setDate(waveStartDate.getDate() - daysBackToWaveStart);
 
       // Форматируем дату начала волны
       const startYear = waveStartDate.getFullYear();
@@ -71,7 +71,13 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
   const WaveGraph = ({ wave }) => {
     if (!wave) return null;
 
-    const energyData = wave.days.map(d => d.energy || 0);
+    const energyData = wave.days.map(d => {
+      if (!d.energy) return 0;
+      if (typeof d.energy === 'number') return d.energy;
+      // Строка -> число
+      const map = { 'Апатия': 1, 'Низкая': 1, 'Спад': 2, 'Средняя': 3, 'Подъём': 4, 'Высокая': 5 };
+      return map[d.energy] || 0;
+    });
     const maxEnergy = 5;
     const points = energyData.map((e, i) => {
       const x = (i / 12) * 100;

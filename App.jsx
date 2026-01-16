@@ -134,6 +134,26 @@ const TzolkinTracker = () => {
   const [waveAnalysis, setWaveAnalysis] = useState('');
   const [loadingDay, setLoadingDay] = useState(false);
   const [loadingWave, setLoadingWave] = useState(false);
+  const [savingDay, setSavingDay] = useState(false);
+
+  // Маппинг энергии: строка -> число 1-5
+  const energyToNumber = (energyLabel) => {
+    const map = {
+      'Апатия': 1,
+      'Низкая': 1,
+      'Спад': 2,
+      'Средняя': 3,
+      'Подъём': 4,
+      'Высокая': 5
+    };
+    return map[energyLabel] || null;
+  };
+
+  // Обратный маппинг: число -> строка (для отображения)
+  const numberToEnergy = (num) => {
+    const map = { 1: 'Низкая', 2: 'Спад', 3: 'Средняя', 4: 'Подъём', 5: 'Высокая' };
+    return map[num] || null;
+  };
 
   const seals = [
     { name: 'Красный Дракон', essence: 'Рождение, питание, изначальная энергия', element: 'Огонь', color: '#DC2626' },
@@ -229,8 +249,10 @@ const TzolkinTracker = () => {
 
     const entry = waveData[selectedDate];
     if (entry) {
+      // Если energy число, конвертируем в строку для UI
+      const energyLabel = typeof entry.energy === 'number' ? numberToEnergy(entry.energy) : entry.energy;
       setTodayAnswers({
-        energy: entry.energy ?? null,
+        energy: energyLabel ?? null,
         resonance: entry.resonance ?? null,
         action: entry.action ?? null,
         project: entry.project ?? null,
@@ -252,18 +274,61 @@ const TzolkinTracker = () => {
   }, [selectedDate, waveData]);
 
   const saveAnswers = async () => {
+    setSavingDay(true);
     const userId = getUserId();
 
-    const dataToSave = {
-      user_id: userId,
-      date: selectedDate,
-      kin: todayKin.kin,
-      tone: todayKin.tone,
-      seal: todayKin.seal,
-      ...todayAnswers
-    };
-
     try {
+      // Преобразуем энергию в число 1-5
+      const energyNumber = energyToNumber(todayAnswers.energy);
+
+      // Вызываем API для структурирования данных (режим секретаря)
+      let aiSummary = null;
+      let aiEvents = null;
+
+      if (todayAnswers.notes || todayAnswers.insight) {
+        try {
+          const aiResponse = await fetch('/api/analyze-day', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mode: 'structure',
+              dayData: {
+                tone: todayKin.tone,
+                seal: seals[todayKin.seal].name,
+                energy: energyNumber,
+                ...todayAnswers
+              }
+            })
+          });
+
+          if (aiResponse.ok) {
+            const aiData = await aiResponse.json();
+            aiSummary = aiData.ai_summary;
+            aiEvents = aiData.ai_events;
+          } else {
+            console.log('AI структурирование недоступно, статус:', aiResponse.status);
+          }
+        } catch (aiError) {
+          console.log('AI структурирование пропущено:', aiError.message);
+        }
+      }
+
+      const dataToSave = {
+        user_id: userId,
+        date: selectedDate,
+        kin: todayKin.kin,
+        tone: todayKin.tone,
+        seal: todayKin.seal,
+        energy: energyNumber,
+        resonance: todayAnswers.resonance,
+        action: todayAnswers.action,
+        project: todayAnswers.project,
+        insight: todayAnswers.insight,
+        notes: todayAnswers.notes,
+        ai_summary: aiSummary,
+        ai_events: aiEvents ? JSON.stringify(aiEvents) : null
+      };
+
       const { error } = await supabaseClient
         .from('user_days')
         .upsert(dataToSave, { onConflict: 'user_id,date' });
@@ -271,32 +336,48 @@ const TzolkinTracker = () => {
       if (error) throw error;
 
       setWaveData({ ...waveData, [selectedDate]: dataToSave });
-      alert('✓ Сохранено!');
+
+      // Haptic feedback и переход на волну
+      window.tgHapticLight?.();
+      setCurrentScreen('wave');
+
     } catch (e) {
       console.error('Ошибка:', e);
-      alert('❌ Ошибка: ' + e.message);
+      alert('❌ Ошибка сохранения: ' + e.message);
+    } finally {
+      setSavingDay(false);
     }
   };
 
   const analyzeDayWithClaude = async () => {
     setLoadingDay(true);
     try {
+      const energyNumber = energyToNumber(todayAnswers.energy);
+
       const response = await fetch('/api/analyze-day', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          mode: 'advice',
           dayData: {
             tone: todayKin.tone,
             seal: seals[todayKin.seal].name,
+            energy: energyNumber,
             ...todayAnswers
           }
         })
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Сервер вернул ошибку ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+
       const data = await response.json();
       setDayAdvice(data.advice);
     } catch (e) {
-      alert('Ошибка анализа: ' + e.message);
+      console.error('Ошибка анализа:', e);
+      alert('Ошибка анализа: ' + e.message + '\n\nПроверьте что API запущен на Vercel или используйте production URL.');
     }
     setLoadingDay(false);
   };
@@ -322,9 +403,15 @@ const TzolkinTracker = () => {
         })
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Сервер вернул ошибку ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+
       const data = await response.json();
       setWaveAnalysis(data.analysis);
     } catch (e) {
+      console.error('Ошибка анализа волны:', e);
       alert('Ошибка анализа: ' + e.message);
     }
     setLoadingWave(false);
@@ -391,6 +478,7 @@ const TzolkinTracker = () => {
         return <WaveHistoryScreen
           waveData={waveData}
           selectedDate={selectedDate}
+          todayKin={todayKin}
           accentColor={seals?.[todayKin.seal]?.color}
           setShowWaveHistory={() => { }}
           setCurrentWaveOffset={setCurrentWaveOffset}
@@ -411,6 +499,7 @@ const TzolkinTracker = () => {
             analyzeDayWithClaude={analyzeDayWithClaude}
             dayAdvice={dayAdvice}
             loadingDay={loadingDay}
+            savingDay={savingDay}
             setCurrentScreen={setCurrentScreen}
           />
         );

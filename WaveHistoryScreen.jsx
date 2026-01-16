@@ -1,4 +1,4 @@
-const WaveHistoryScreen = ({ waveData, selectedDate, accentColor, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen }) => {
+const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen }) => {
   const [view, setView] = useState('current');
   const currentDate = selectedDate || new Date().toISOString().split('T')[0];
 
@@ -21,9 +21,11 @@ const WaveHistoryScreen = ({ waveData, selectedDate, accentColor, setShowWaveHis
 
       // Начинаем с текущей волны (offset 0) и идем назад
       for (let offset = 0; offset >= -10; offset--) { // Показываем последние 10 волн
-        const totalDaysBack = 12 + (Math.max(0, -offset) * 13);
+        // Рассчитываем начало волны на основе тона текущего дня
+        // Если сегодня тон 12, то начало волны = today - 11 дней
+        const daysBackToWaveStart = (todayKin.tone - 1) + (Math.max(0, -offset) * 13);
         const waveStartDate = new Date(today);
-        waveStartDate.setDate(waveStartDate.getDate() - totalDaysBack);
+        waveStartDate.setDate(waveStartDate.getDate() - daysBackToWaveStart);
 
         // Форматируем дату начала волны
         const startYear = waveStartDate.getFullYear();
@@ -91,13 +93,11 @@ const WaveHistoryScreen = ({ waveData, selectedDate, accentColor, setShowWaveHis
       <div className="max-w-4xl mx-auto space-y-3 pb-24">
         {waves.map((wave, index) => {
           const completedDays = wave.days.filter(d => d.data?.energy).length;
-          const energyScore = (label) => ({
-            'Низкая': 1,
-            'Спад': 2,
-            'Средняя': 3,
-            'Подъём': 4,
-            'Высокая': 5
-          }[label] || 0);
+          const energyScore = (val) => {
+            if (typeof val === 'number') return val;
+            const map = { 'Апатия': 1, 'Низкая': 1, 'Спад': 2, 'Средняя': 3, 'Подъём': 4, 'Высокая': 5 };
+            return map[val] || 0;
+          };
           const avgEnergy = wave.days.reduce((sum, d) => sum + (d.data?.energy ? energyScore(d.data.energy) : 0), 0) / completedDays || 0;
           const peakDay = wave.days.reduce((max, d, idx) =>
             (d.data?.energy ? energyScore(d.data.energy) : 0) > (wave.days[max]?.data?.energy ? energyScore(wave.days[max].data.energy) : 0) ? idx : max, 0

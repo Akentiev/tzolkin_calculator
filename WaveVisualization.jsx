@@ -18,7 +18,14 @@ const WaveVisualization = ({ waveData, setShowWave }) => {
   };
 
   const waveDays = getLast13Days();
-  const energyData = waveDays.map(d => d.data?.energy ? ['Низкая', 'Спад', 'Средняя', 'Подъём', 'Высокая'].indexOf(d.data.energy) + 1 : 0);
+  // Если energy уже число, используем его; если строка, конвертируем
+  const energyData = waveDays.map(d => {
+    if (!d.data?.energy) return 0;
+    if (typeof d.data.energy === 'number') return d.data.energy;
+    // Строка -> число
+    const map = { 'Апатия': 1, 'Низкая': 1, 'Спад': 2, 'Средняя': 3, 'Подъём': 4, 'Высокая': 5 };
+    return map[d.data.energy] || 0;
+  });
 
   const maxEnergy = 5;
   const points = energyData.map((e, i) => {
@@ -139,16 +146,14 @@ const WaveVisualization = ({ waveData, setShowWave }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {waveDays.map((day, i) => (
-              <div key={i} className={`p-4 rounded-lg border ${
-                day.date === currentDate
+              <div key={i} className={`p-4 rounded-lg border ${day.date === currentDate
                   ? 'bg-purple-500/20 border-purple-500/50'
                   : 'bg-gray-800/50 border-gray-700'
-              }`}>
+                }`}>
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <div className={`text-sm font-semibold ${
-                      day.date === currentDate ? 'text-purple-300' : 'text-gray-300'
-                    }`}>
+                    <div className={`text-sm font-semibold ${day.date === currentDate ? 'text-purple-300' : 'text-gray-300'
+                      }`}>
                       День {day.dayNumber}
                     </div>
                     <div className="text-xs text-gray-500">{day.date}</div>
@@ -164,14 +169,13 @@ const WaveVisualization = ({ waveData, setShowWave }) => {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Энергия:</span>
-                      <span className={`font-medium ${
-                        day.data.energy === 'Высокая' ? 'text-blue-400' :
-                        day.data.energy === 'Подъём' ? 'text-green-400' :
-                        day.data.energy === 'Средняя' ? 'text-yellow-400' :
-                        day.data.energy === 'Спад' ? 'text-orange-400' :
-                        'text-red-400'
-                      }`}>
-                        {day.data.energy}
+                      <span className={`font-medium ${(typeof day.data.energy === 'number' ? day.data.energy : 0) >= 5 ? 'text-blue-400' :
+                          (typeof day.data.energy === 'number' ? day.data.energy : 0) >= 4 ? 'text-green-400' :
+                            (typeof day.data.energy === 'number' ? day.data.energy : 0) >= 3 ? 'text-yellow-400' :
+                              (typeof day.data.energy === 'number' ? day.data.energy : 0) >= 2 ? 'text-orange-400' :
+                                'text-red-400'
+                        }`}>
+                        {typeof day.data.energy === 'number' ? `${day.data.energy}/5` : day.data.energy || '?'}
                       </span>
                     </div>
                     {day.data.notes && (
@@ -197,28 +201,28 @@ const WaveVisualization = ({ waveData, setShowWave }) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-gray-800/50 rounded-lg">
               <div className="text-2xl font-bold text-blue-400">
-                {waveDays.filter(d => d.data?.energy === 'Высокая').length}
+                {waveDays.filter(d => typeof d.data?.energy === 'number' && d.data.energy >= 5).length}
               </div>
               <div className="text-sm text-gray-400">Высоких дней</div>
             </div>
 
             <div className="text-center p-4 bg-gray-800/50 rounded-lg">
               <div className="text-2xl font-bold text-green-400">
-                {waveDays.filter(d => d.data?.energy === 'Подъём').length}
+                {waveDays.filter(d => typeof d.data?.energy === 'number' && d.data.energy === 4).length}
               </div>
               <div className="text-sm text-gray-400">Дней подъёма</div>
             </div>
 
             <div className="text-center p-4 bg-gray-800/50 rounded-lg">
               <div className="text-2xl font-bold text-orange-400">
-                {waveDays.filter(d => d.data?.energy === 'Спад').length}
+                {waveDays.filter(d => typeof d.data?.energy === 'number' && d.data.energy === 2).length}
               </div>
               <div className="text-sm text-gray-400">Дней спада</div>
             </div>
 
             <div className="text-center p-4 bg-gray-800/50 rounded-lg">
               <div className="text-2xl font-bold text-red-400">
-                {waveDays.filter(d => d.data?.energy === 'Низкая').length}
+                {waveDays.filter(d => typeof d.data?.energy === 'number' && d.data.energy === 1).length}
               </div>
               <div className="text-sm text-gray-400">Низких дней</div>
             </div>

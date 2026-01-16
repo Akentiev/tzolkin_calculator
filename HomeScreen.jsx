@@ -1,6 +1,6 @@
 const { useState } = React;
 
-const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData, todayAnswers, setTodayAnswers, saveAnswers, analyzeDayWithClaude, dayAdvice, loadingDay, setCurrentScreen }) => {
+const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData, todayAnswers, setTodayAnswers, saveAnswers, analyzeDayWithClaude, dayAdvice, loadingDay, savingDay, setCurrentScreen }) => {
   const [showDetails, setShowDetails] = useState(false);
   const seal = seals[todayKin.seal];
   const tone = tones[todayKin.tone - 1];
@@ -240,18 +240,27 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
 
         <button
           onClick={() => {
-            window.tgHapticLight?.();
-            saveAnswers();
+            if (!savingDay) {
+              window.tgHapticLight?.();
+              saveAnswers();
+            }
           }}
-          className="mt-4 w-full min-h-[50px] rounded-3xl px-4 py-4 text-sm font-semibold text-white transition duration-300 hover:opacity-95 active:scale-[0.98]"
+          disabled={savingDay || !todayAnswers.energy}
+          className="mt-4 w-full min-h-[50px] rounded-3xl px-4 py-4 text-sm font-semibold text-white transition duration-300 hover:opacity-95 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
           style={{
             backgroundImage: `linear-gradient(135deg, ${hexToRgba(accent, 0.95)}, ${hexToRgba(accent, 0.55)})`,
             boxShadow: `0 18px 45px ${hexToRgba(accent, 0.18)}`
           }}
         >
           <span className="inline-flex items-center justify-center gap-2">
-            {(window.LucideReact?.Save ? <window.LucideReact.Save size={20} strokeWidth={1.5} /> : null)}
-            Сохранить день
+            {savingDay ? (
+              window.LucideReact?.Loader2 ? (
+                <window.LucideReact.Loader2 size={20} strokeWidth={1.5} className="animate-spin" />
+              ) : '⏳'
+            ) : (
+              window.LucideReact?.Save ? <window.LucideReact.Save size={20} strokeWidth={1.5} /> : null
+            )}
+            {savingDay ? 'ИИ обрабатывает данные...' : 'Сохранить день'}
           </span>
         </button>
 
@@ -262,12 +271,18 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
               window.tgHapticLight?.();
               analyzeDayWithClaude();
             }}
-            disabled={!todayAnswers.energy || loadingDay}
-            className="w-full min-h-[50px] appearance-none rounded-3xl border border-white/10 bg-slate-950/60 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-60 disabled:bg-slate-950/60 active:scale-[0.98]"
+            disabled={!todayAnswers.energy || loadingDay || savingDay}
+            className="w-full min-h-[50px] appearance-none rounded-3xl border border-white/10 bg-slate-950/60 px-4 py-4 text-sm font-semibold text-white/90 transition duration-300 hover:bg-white/10 disabled:opacity-60 disabled:bg-slate-950/60 disabled:cursor-not-allowed active:scale-[0.98]"
           >
             <span className="inline-flex items-center justify-center gap-2">
-              {(window.LucideReact?.Bot ? <window.LucideReact.Bot size={20} strokeWidth={1.5} /> : null)}
-              {loadingDay ? 'Анализирую...' : 'Совет AI на сегодня'}
+              {loadingDay ? (
+                window.LucideReact?.Loader2 ? (
+                  <window.LucideReact.Loader2 size={20} strokeWidth={1.5} className="animate-spin" />
+                ) : '⏳'
+              ) : (
+                window.LucideReact?.Bot ? <window.LucideReact.Bot size={20} strokeWidth={1.5} /> : null
+              )}
+              {loadingDay ? 'ИИ обрабатывает данные...' : 'ИИ-совет на сегодня'}
             </span>
           </button>
 
