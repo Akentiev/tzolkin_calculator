@@ -159,14 +159,6 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
 
   // Компонент карточки дня
   const DayCard = ({ day, index }) => {
-    const energyColors = {
-      1: 'bg-red-500',
-      2: 'bg-orange-500',
-      3: 'bg-yellow-500',
-      4: 'bg-green-500',
-      5: 'bg-blue-500'
-    };
-
     // Получить день недели на русском
     const getDayOfWeek = (dateStr) => {
       const date = new Date(dateStr + 'T00:00:00');
@@ -181,6 +173,26 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
     const corner = index % 4;
     const cornerPos = corner === 0 ? '10% 0%' : corner === 1 ? '90% 0%' : corner === 2 ? '10% 100%' : '90% 100%';
 
+    // Получить фазу дня из day.tone.phase
+    const phase = day.tone && day.tone.phase ? day.tone.phase : '';
+
+    // ai_summary, ai_events, notes, fallback
+    const ai_summary = (day.data && day.data.ai_summary) || day.ai_summary;
+    const ai_events = (day.data && day.data.ai_events) || day.ai_events;
+    const notes = (day.data && day.data.notes) || day.notes;
+    let mainText = '';
+    if (ai_summary || (Array.isArray(ai_events) && ai_events.length > 0)) {
+      mainText = '';
+    } else if (notes && notes.trim()) {
+      mainText = notes;
+    } else {
+      mainText = 'Данные не заполнены';
+    }
+
+    // Энергия как X/5
+    const energyValue = typeof day.energy === 'number' ? day.energy : (typeof day.energy === 'string' ? ({ 'Апатия': 1, 'Низкая': 1, 'Спад': 2, 'Средняя': 3, 'Подъём': 4, 'Высокая': 5 }[day.energy] || null) : null);
+    const energyText = energyValue ? `${energyValue}/5` : '—/5';
+
     return (
       <div
         className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
@@ -193,46 +205,31 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-sm text-white/60">День {day.dayNumber}</div>
-            <div className="mt-1 text-white font-semibold">{day.tone.name}</div>
+            {/* <div className="mt-1 text-white font-semibold">{day.tone.name}</div> */}
             <div className="mt-1 text-xs font-medium" style={{ color: day.sealColor }}>{day.seal.name}</div>
           </div>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map(level => (
-              <button
-                key={level}
-                onClick={() => {
-                  window.tgHapticLight?.();
-                  updateDayEnergy(day.date, level);
-                }}
-                className={`h-10 w-10 rounded-2xl border border-white/10 transition duration-300 active:scale-[0.96] ${day.energy === level ? energyColors[level] : 'bg-white/5 hover:bg-white/10'
-                  }`}
-              />
-            ))}
+          <div className="flex flex-col items-end min-w-[70px]">
+            <div className="text-xs text-right text-white/70 mb-1" style={{ minWidth: '60px' }}>{phase}</div>
+            <div className="text-lg font-bold text-white/90">{energyText}</div>
           </div>
         </div>
 
-        {/* AI summary/events или notes */}
-        {day.data && (day.data.ai_summary || (Array.isArray(day.data.ai_events) && day.data.ai_events.length > 0)) ? (
+        {/* AI summary/events или notes или fallback */}
+        {ai_summary || (Array.isArray(ai_events) && ai_events.length > 0) ? (
           <div className="mt-4">
-            {day.data.ai_summary && (
-              <div className="font-semibold text-white mb-1">{day.data.ai_summary}</div>
+            {ai_summary && (
+              <div className="font-semibold text-white mb-1">{ai_summary}</div>
             )}
-            {Array.isArray(day.data.ai_events) && day.data.ai_events.length > 0 && (
+            {Array.isArray(ai_events) && ai_events.length > 0 && (
               <ul className="list-disc list-inside text-white/80 text-sm">
-                {day.data.ai_events.map((ev, idx) => (
+                {ai_events.map((ev, idx) => (
                   <li key={idx}>{ev}</li>
                 ))}
               </ul>
             )}
           </div>
         ) : (
-          <textarea
-            value={day.notes}
-            onChange={(e) => updateDayNotes(day.date, e.target.value)}
-            placeholder="Заметки дня..."
-            className="mt-4 w-full rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/90 placeholder:text-white/40 outline-none transition duration-300 focus:bg-white/10"
-            rows="2"
-          />
+          <div className="mt-4 text-white/70 text-sm whitespace-pre-line">{mainText}</div>
         )}
 
         <div className="mt-2 inline-flex items-center gap-2 text-xs text-white/50">
