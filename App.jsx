@@ -326,7 +326,7 @@ const TzolkinTracker = () => {
         insight: todayAnswers.insight,
         notes: todayAnswers.notes,
         ai_summary: aiSummary,
-        ai_events: aiEvents ? JSON.stringify(aiEvents) : null
+        ai_events: aiEvents || null
       };
 
       const { error } = await supabaseClient
