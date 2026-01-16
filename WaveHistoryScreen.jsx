@@ -48,9 +48,13 @@ const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setS
           const day = String(dayDate.getDate()).padStart(2, '0');
           const dateStr = `${year}-${month}-${day}`;
 
+          // Новый расчет тона и печати через calculateKin
+          const kinData = typeof calculateKin === 'function' ? calculateKin(dateStr) : { tone: (i % 13) + 1, seal: i % 20 };
           wave.days.push({
             date: dateStr,
-            data: waveData[dateStr] || null
+            data: waveData[dateStr] || null,
+            tone: kinData.tone,
+            seal: kinData.seal
           });
         }
 

@@ -37,7 +37,7 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
         days: []
       };
 
-      // Генерируем 13 дней волны
+      // Генерируем 13 дней волны с правильным расчетом тона и печати
       for (let i = 0; i < 13; i++) {
         const dayDate = new Date(waveStartDate);
         dayDate.setDate(waveStartDate.getDate() + i);
@@ -47,14 +47,17 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
         const day = String(dayDate.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
 
+        // Новый расчет тона и печати через calculateKin
+        const kinData = typeof calculateKin === 'function' ? calculateKin(dateStr) : { tone: (i % 13) + 1, seal: i % 20 };
+
         wave.days.push({
           dayNumber: i + 1,
           date: dateStr,
           energy: waveData[dateStr]?.energy || null,
           notes: waveData[dateStr]?.notes || '',
-          tone: tones[i % 13],
-          seal: seals[i % 20],
-          sealColor: seals[i % 20].color
+          tone: tones[kinData.tone - 1],
+          seal: seals[kinData.seal],
+          sealColor: seals[kinData.seal].color
         });
       }
 
