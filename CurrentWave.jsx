@@ -228,7 +228,8 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
 
   // Функции обновления данных
   const updateDayEnergy = (date, energy) => {
-    updateDay(date, 'energy', energy === 1 ? 'Низкая' : energy === 2 ? 'Спад' : energy === 3 ? 'Средняя' : energy === 4 ? 'Подъём' : 'Высокая');
+    // energy уже число 1-5, передаем как есть
+    updateDay(date, 'energy', energy);
   };
 
   const updateDayNotes = (date, notes) => {

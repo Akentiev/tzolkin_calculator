@@ -429,7 +429,13 @@ const TzolkinTracker = () => {
         seal: kinData.seal
       };
     }
-    updatedData[date][field] = value;
+
+    // Если поле energy - конвертируем строку в число
+    if (field === 'energy' && typeof value === 'string') {
+      updatedData[date][field] = energyToNumber(value);
+    } else {
+      updatedData[date][field] = value;
+    }
 
     try {
       const { error } = await supabaseClient
