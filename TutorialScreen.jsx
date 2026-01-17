@@ -45,12 +45,18 @@ const TutorialScreen = ({ seals, tones, setShowTutorial }) => {
           <h2 className="text-base font-bold text-white mb-4 tracking-wide">20 Печатей</h2>
           <div className="grid grid-cols-2 gap-2 text-sm">
             {seals.map((seal, index) => (
-              <div key={index} className="rounded-2xl glass-card p-3 hover:bg-white/8 transition-all duration-300" style={{
-                boxShadow: `0 2px 10px ${seal.color}15, inset 0 1px 0 rgba(255, 255, 255, 0.05)`
-              }}>
+              <div
+                key={index}
+                className="rounded-2xl glass-card p-3 transition-all duration-300"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(8, 12, 20, 0.92), rgba(8, 14, 24, 0.82))',
+                  border: `1.5px solid ${seal.color}33`,
+                  boxShadow: `0 10px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)`
+                }}
+              >
                 <div className="font-bold" style={{ color: seal.color }}>{seal.name}</div>
-                <div className="text-white/70 text-xs mt-1 font-light">{seal.essence}</div>
-                <div className="text-white/50 text-xs mt-0.5">{seal.element}</div>
+                <div className="text-white/75 text-xs mt-1 font-light">{seal.essence}</div>
+                <div className="text-white/55 text-xs mt-0.5">{seal.element}</div>
               </div>
             ))}
           </div>
@@ -63,15 +69,21 @@ const TutorialScreen = ({ seals, tones, setShowTutorial }) => {
           <h2 className="text-base font-bold text-white mb-4 tracking-wide">13 Тонов</h2>
           <div className="space-y-2 text-sm">
             {tones.map((tone) => (
-              <div key={tone.n} className="rounded-2xl glass-card p-3 hover:bg-white/8 transition-all duration-300" style={{
-                boxShadow: '0 2px 10px rgba(6, 182, 212, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-              }}>
+              <div
+                key={tone.n}
+                className="rounded-2xl glass-card p-3 transition-all duration-300"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(10, 16, 26, 0.95), rgba(12, 18, 30, 0.82))',
+                  border: '1.5px solid rgba(79, 209, 197, 0.28)',
+                  boxShadow: '0 10px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                }}
+              >
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-white">Тон {tone.n} • {tone.name}</span>
-                  <span className="text-cyan-400/70 text-xs font-medium px-2 py-1 rounded-lg glass-card">{tone.phase}</span>
+                  <span className="text-cyan-400/75 text-xs font-medium px-2 py-1 rounded-lg glass-card" style={{ background: 'rgba(8, 20, 32, 0.7)', border: '1px solid rgba(79, 209, 197, 0.35)' }}>{tone.phase}</span>
                 </div>
-                <div className="text-white/70 text-xs mt-1.5 font-light">{tone.essence}</div>
-                <div className="text-white/50 text-xs mt-1 font-light">{tone.action}</div>
+                <div className="text-white/75 text-xs mt-1.5 font-light">{tone.essence}</div>
+                <div className="text-white/60 text-xs mt-1 font-light">{tone.action}</div>
               </div>
             ))}
           </div>
