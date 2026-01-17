@@ -53,6 +53,7 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
         wave.days.push({
           dayNumber: i + 1,
           date: dateStr,
+          data: waveData[dateStr] || null,
           energy: waveData[dateStr]?.energy || null,
           notes: waveData[dateStr]?.notes || '',
           tone: tones[kinData.tone - 1],
@@ -242,13 +243,13 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-white/50">День {day.dayNumber}</div>
+              <div className="text-sm font-medium" style={{ color: day.sealColor }}>
+                {day.dayNumber} {day.seal.name}
+              </div>
               {isToday && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">Сегодня</span>
               )}
             </div>
-            <div className="mt-1.5 text-sm font-semibold" style={{ color: day.sealColor }}>{day.seal.name}</div>
-            <div className="mt-0.5 text-xs text-white/50">{day.tone?.name || ''}</div>
           </div>
           <div className="flex flex-col items-end min-w-[80px]">
             <div
@@ -312,24 +313,15 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
 
       {/* Header */}
       <div className="max-w-2xl mx-auto mb-6">
-        <div
-          className="rounded-3xl glass-card-strong p-6"
-          style={{
-            borderColor: hexToRgba(accent, 0.25),
-            backgroundImage: `radial-gradient(900px circle at 0% 0%, ${hexToRgba(accent, 0.18)}, transparent 60%)`,
-            boxShadow: `0 0 30px ${hexToRgba(accent, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
-          }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-xl font-bold tracking-wide text-white">Волны Цолькин</div>
-              <div className="mt-1.5 text-sm text-white/50 font-light">Дневник паттернов энергии</div>
-            </div>
-            <div className="text-cyan-400/80">
-              {window.LucideReact?.Waves ? (
-                <window.LucideReact.Waves size={24} strokeWidth={2} />
-              ) : null}
-            </div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-2xl font-bold tracking-wide text-white">Волны Цолькин</div>
+            <div className="mt-1.5 text-sm text-white/50 font-light">Дневник паттернов энергии</div>
+          </div>
+          <div className="text-white/70">
+            {window.LucideReact?.Waves ? (
+              <window.LucideReact.Waves size={26} strokeWidth={2} />
+            ) : null}
           </div>
         </div>
       </div>

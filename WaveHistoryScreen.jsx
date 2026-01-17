@@ -71,26 +71,20 @@ const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setS
   const waves = getWaves();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-4 pb-24">
+    <div className="min-h-screen text-white p-4 pb-32 fade-in">
 
       {/* Заголовок */}
       <div className="max-w-4xl mx-auto mb-4">
-        <div
-          className="rounded-3xl border bg-white/5 p-5 backdrop-blur-xl"
-          style={{
-            borderColor: hexToRgba(accent, 0.18),
-            backgroundImage: `radial-gradient(900px circle at 0% 0%, ${hexToRgba(accent, 0.14)}, transparent 55%)`
-          }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-lg font-semibold text-white">История волн</div>
-            <div className="text-white/60">
-              {window.LucideReact?.Layers ? (
-                <window.LucideReact.Layers size={20} strokeWidth={1.5} />
-              ) : null}
-            </div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-2xl font-bold tracking-wide text-white">История волн</div>
+            <div className="mt-1 text-sm text-white/50 font-light">Выберите волну, чтобы открыть детали</div>
           </div>
-          <div className="mt-1 text-sm text-white/60">Выберите волну, чтобы открыть детали</div>
+          <div className="text-white/70">
+            {window.LucideReact?.Layers ? (
+              <window.LucideReact.Layers size={26} strokeWidth={2} />
+            ) : null}
+          </div>
         </div>
       </div>
 
