@@ -175,9 +175,14 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
         </button>
 
         {showDetails && (
-          <div className="mt-4 rounded-2xl glass-card p-4 text-sm text-white/70 fade-in" style={{
-            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-          }}>
+          <div
+            className="mt-4 rounded-2xl glass-card p-4 text-sm text-white/70 fade-in"
+            style={{
+              background: 'linear-gradient(135deg, rgba(6, 10, 18, 0.85), rgba(6, 12, 22, 0.78))',
+              border: `1.5px solid ${hexToRgba(accent, 0.28)}`,
+              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+            }}
+          >
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <div className="text-xs text-white/50 font-medium">Стихия</div>
@@ -218,28 +223,44 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
           <div key={key} className="mt-5">
             <div className="text-sm text-white/70 mb-3 font-medium">{q}</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {options.map(opt => (
-                <button
-                  key={opt}
-                  onClick={() => {
-                    window.tgHapticLight?.();
-                    setTodayAnswers({ ...todayAnswers, [key]: opt });
-                  }}
-                  className={`min-h-[50px] rounded-2xl px-3 py-3 text-sm font-medium transition-all duration-300 active:scale-[0.95] ${todayAnswers[key] === opt
+              {options.map(opt => {
+                const isActive = todayAnswers[key] === opt;
+
+                const baseButtonStyle = {
+                  border: '1.5px solid rgba(255, 255, 255, 0.14)',
+                  background: 'rgba(8, 14, 24, 0.62)',
+                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                  transform: 'translateZ(0)',
+                  WebkitTransform: 'translateZ(0)',
+                  willChange: 'transform'
+                };
+
+                const activeButtonStyle = {
+                  background: `linear-gradient(135deg, ${hexToRgba(accent, 0.38)}, ${hexToRgba(accent, 0.22)})`,
+                  border: `1.5px solid ${hexToRgba(accent, 0.70)}`,
+                  boxShadow: `0 0 18px ${hexToRgba(accent, 0.24)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`,
+                  transform: 'translateZ(0)',
+                  WebkitTransform: 'translateZ(0)',
+                  willChange: 'transform'
+                };
+
+                return (
+                  <button
+                    key={opt}
+                    onClick={() => {
+                      window.tgHapticLight?.();
+                      setTodayAnswers({ ...todayAnswers, [key]: opt });
+                    }}
+                    className={`min-h-[50px] rounded-2xl px-3 py-3 text-sm font-medium transition-all duration-300 active:scale-[0.95] glass-card ${isActive
                       ? 'text-white'
-                      : 'glass-card text-white/70 hover:bg-white/10'
-                    }`}
-                  style={todayAnswers[key] === opt ? {
-                    background: `linear-gradient(135deg, ${hexToRgba(accent, 0.35)}, ${hexToRgba(accent, 0.18)})`,
-                    border: `1.5px solid ${hexToRgba(accent, 0.60)}`,
-                    boxShadow: `0 0 20px ${hexToRgba(accent, 0.25)}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
-                  } : {
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-                  }}
-                >
-                  {opt}
-                </button>
-              ))}
+                      : 'text-white/80 hover:bg-white/5'
+                      }`}
+                    style={isActive ? activeButtonStyle : baseButtonStyle}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
