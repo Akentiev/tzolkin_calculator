@@ -135,6 +135,14 @@ const TzolkinTracker = () => {
   const [loadingDay, setLoadingDay] = useState(false);
   const [loadingWave, setLoadingWave] = useState(false);
   const [savingDay, setSavingDay] = useState(false);
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('userProfile');
+      return saved ? JSON.parse(saved) : { name: '', birthDate: '', tzolkinBirth: null, syucai: null, aiPortrait: '' };
+    } catch (_) {
+      return { name: '', birthDate: '', tzolkinBirth: null, syucai: null, aiPortrait: '' };
+    }
+  });
 
   // Маппинг энергии: строка -> число 1-5
   const energyToNumber = (energyLabel) => {
@@ -496,6 +504,14 @@ const TzolkinTracker = () => {
           setShowWaveHistory={() => { }}
           setCurrentWaveOffset={setCurrentWaveOffset}
           setCurrentScreen={setCurrentScreen}
+        />;
+      case 'profile':
+        return <ProfileScreen
+          userProfile={userProfile}
+          setUserProfile={setUserProfile}
+          seals={seals}
+          tones={tones}
+          accentColor={seals?.[todayKin.seal]?.color}
         />;
       default:
         return (

@@ -13,7 +13,7 @@
 
 JSX files are loaded as `<script type="text/babel">` in [index.html](../index.html). **Order matters**: dependencies must load before dependents. Current load order (last = root):
 ```
-WaveVisualization → WaveHistoryScreen → TutorialScreen → WaveHistory → HomeScreen → CurrentWave → FullCalendarScreen → BottomNavigation → App.jsx
+WaveVisualization → WaveHistoryScreen → TutorialScreen → WaveHistory → HomeScreen → CurrentWave → FullCalendarScreen → ProfileScreen → BottomNavigation → App.jsx
 ```
 
 ## Critical Patterns
@@ -26,7 +26,15 @@ The **single source of truth** for Kin/Tone/Seal calculation is `calculateKin()`
 - Returns `{ kin, tone, seal }` where `tone` is 1-13, `seal` is 0-19
 - **Never** calculate Kin manually. Always use this function.
 
-### 2. Global State via `window`
+### 2. Syucai Calculation (`calculateSyucai`)
+
+Chinese numerology system in [ProfileScreen.jsx](../ProfileScreen.jsx#L20-L35):
+- **Consciousness Number**: Sum of birth day digits reduced to 1-9
+- **Mission Number**: Sum of full birthdate (day+month+year) reduced to 1-9
+- Used alongside Tzolkin for personality profiling
+- Returns `{ consciousness, mission }` both 1-9
+
+### 3. Global State via `window`
 
 Globals defined in [App.jsx](../App.jsx):
 - `window.tgHapticLight()` - Safe wrapper for Telegram haptic feedback
@@ -43,23 +51,21 @@ Use helper functions in [App.jsx](../App.jsx#L141-L154):
 - `energyToNumber(label)` - UI label → number for DB
 - `numberToEnergy(num)` - DB number → UI label
 
-### 4. AI Integration Architecture
+### 5. AI Integration Architecture
 
-**Two-mode AI system** in [api/analyze-day.js](../api/analyze-day.js):
+**Three AI endpoints**:
 
-- **Mode: `structure`** (Secretary) - Extracts structured data from notes:
-  - Returns `{ ai_summary, ai_events }` (JSON)
-  - Auto-called on save if notes exist
-  - Stored in `user_days` table
-  
-- **Mode: default** (Advisor) - Returns coaching advice:
-  - Returns Markdown with psychological analysis
-  - Called manually via "ИИ-совет" button
-  - NOT stored in DB
+1. **[api/analyze-day.js](../api/analyze-day.js)** - Two modes:
+   - **Mode: `structure`** (Secretary) - Extracts structured data from notes
+   - **Mode: default** (Advisor) - Returns coaching advice in Markdown
 
-Wave analysis: [api/analyze-wave.js](../api/analyze-wave.js) - full 13-day pattern analysis.
+2. **[api/analyze-wave.js](../api/analyze-wave.js)** - Full 13-day pattern analysis
 
-### 5. Markdown Rendering
+3. **[api/analyze-profile.js](../api/analyze-profile.js)** - Generates personality portrait combining Tzolkin + Syucai (3-5 sentences)
+
+All endpoints return Markdown (except `structure` mode → JSON). Auto-sanitized before display.
+
+### 6. Markdown Rendering
 
 **All AI responses use safe Markdown rendering**:
 ```jsx
@@ -72,7 +78,7 @@ const renderMarkdown = (markdown) => {
 
 Pattern in: [HomeScreen.jsx](../HomeScreen.jsx#L21-L52), [WaveHistory.jsx](../WaveHistory.jsx#L2-L19)
 
-### 6. Supabase Data Layer
+### 7. Supabase Data Layer
 
 **Single table**: `user_days`
 
@@ -89,6 +95,11 @@ ai_events (json) - Array of strings
 ```
 
 **Upsert pattern**: Always use `{ onConflict: 'user_id,date' }` when saving.
+
+**User Profile**: Stored in `localStorage` as `userProfile` key:
+```js
+{ name, birthDate, tzolkinBirth, syucai, aiPortrait }
+```
 
 ## Development Workflows
 
@@ -146,4 +157,5 @@ const { Calendar, ChevronDown } = window.LucideReact || {};
 - Tzolkin math: [App.jsx](../App.jsx#L90-L115)
 - Daily tracking UI: [HomeScreen.jsx](../HomeScreen.jsx)
 - Wave visualization: [CurrentWave.jsx](../CurrentWave.jsx), [WaveHistory.jsx](../WaveHistory.jsx)
-- AI endpoints: [api/analyze-day.js](../api/analyze-day.js), [api/analyze-wave.js](../api/analyze-wave.js)
+- Profile & Syucai: [ProfileScreen.jsx](../ProfileScreen.jsx)
+- AI endpoints: [api/analyze-day.js](../api/analyze-day.js), [api/analyze-wave.js](../api/analyze-wave.js), [api/analyze-profile.js](../api/analyze-profile.js)

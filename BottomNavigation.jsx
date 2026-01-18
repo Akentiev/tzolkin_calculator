@@ -19,13 +19,13 @@ const BottomNavigation = ({ currentScreen, setCurrentScreen }) => {
       screen: 'wave'
     },
     {
-      id: 'history',
-      label: 'История',
+      id: 'profile',
+      label: 'Профиль',
       icon: {
-        emoji: '📊',
-        lucide: 'BarChart3'
+        emoji: '👤',
+        lucide: 'User'
       },
-      screen: 'history'
+      screen: 'profile'
     }
   ];
 
@@ -52,8 +52,8 @@ const BottomNavigation = ({ currentScreen, setCurrentScreen }) => {
                       setCurrentScreen(item.screen);
                     }}
                     className={`min-h-[60px] rounded-3xl transition-all duration-300 active:scale-[0.95] ${isActive
-                        ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/20 text-white border border-cyan-400/30'
-                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/90 border border-white/10'
+                      ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/20 text-white border border-cyan-400/30'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/90 border border-white/10'
                       }`}
                     style={isActive ? {
                       boxShadow: '0 0 20px rgba(0, 150, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
