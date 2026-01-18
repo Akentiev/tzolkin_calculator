@@ -34,6 +34,11 @@ Chinese numerology system in [ProfileScreen.jsx](../ProfileScreen.jsx#L20-L35):
 - Used alongside Tzolkin for personality profiling
 - Returns `{ consciousness, mission }` both 1-9
 
+**Personal Day Calculation**: Current day's numerology [WaveHistoryScreen.jsx](../WaveHistoryScreen.jsx):
+- Formula: `sumDigits(day) + sumDigits(month) + consciousness number` → reduce to 1-9
+- Shows daily Syucai cycle in wave history view
+- Only displayed when user has set birth date
+
 ### 3. Global State via `window`
 
 Globals defined in [App.jsx](../App.jsx):
@@ -58,6 +63,13 @@ Use helper functions in [App.jsx](../App.jsx#L141-L154):
 1. **[api/analyze-day.js](../api/analyze-day.js)** - Two modes:
    - **Mode: `structure`** (Secretary) - Extracts structured data from notes
    - **Mode: default** (Advisor) - Returns coaching advice in Markdown
+   - **Personalization**: Accepts `userProfile` param to analyze resonances between birth Kin/current day Kin, consciousness number/tone phase
+   - **Personal Day**: Calculates daily Syucai number (1-9) using `day + month + consciousness`
+   - **Seal Names**: Uses readable seal names (e.g., "Красный Дракон") instead of indices
+   - **Triple Resonance Analysis**: 
+     1. Birth Kin ↔ Day Kin
+     2. Tone ↔ Consciousness Number
+     3. Personal Day ↔ Mission Number
 
 2. **[api/analyze-wave.js](../api/analyze-wave.js)** - Full 13-day pattern analysis
 

@@ -101,13 +101,8 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
       <div className="w-full h-40">
         <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
-            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.5" />
-              <stop offset="50%" stopColor="#0ea5e9" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.5" />
-            </linearGradient>
             <filter id="neonGlow">
-              <feGaussianBlur stdDeviation="1" result="coloredBlur" />
+              <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
               <feMerge>
                 <feMergeNode in="coloredBlur" />
                 <feMergeNode in="SourceGraphic" />
@@ -115,35 +110,19 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
             </filter>
           </defs>
 
-          {/* Grid lines */}
-          {[20, 40, 60, 80].map(y => (
-            <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.3" />
-          ))}
-
-          {/* Glow effect under line */}
+          {/* Main Wave line with neon cyan */}
           <polyline
             points={points}
             fill="none"
-            stroke="url(#waveGradient)"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.3"
-            filter="url(#neonGlow)"
-          />
-
-          {/* Main Wave line */}
-          <polyline
-            points={points}
-            fill="none"
-            stroke="url(#waveGradient)"
+            stroke="#22D3EE"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
             filter="url(#neonGlow)"
+            style={{ filter: 'drop-shadow(0 0 8px rgba(34,211,238,0.8))' }}
           />
 
-          {/* Points with neon glow */}
+          {/* Points with cyan glow */}
           {energyData.map((e, i) => {
             if (e === 0) return null;
             const x = (i / 12) * 100;
@@ -154,18 +133,18 @@ const CurrentWave = ({ today, todayKin, seals, tones, currentWaveOffset, setCurr
                 <circle
                   cx={x}
                   cy={y}
-                  r="3.5"
-                  fill="#06b6d4"
-                  opacity="0.3"
+                  r="3"
+                  fill="#22D3EE"
+                  opacity="0.4"
                   filter="url(#neonGlow)"
                 />
                 <circle
                   cx={x}
                   cy={y}
-                  r="2"
-                  fill="#ffffff"
-                  stroke="#06b6d4"
-                  strokeWidth="1"
+                  r="1.5"
+                  fill="#FFFFFF"
+                  stroke="#22D3EE"
+                  strokeWidth="0.8"
                 />
               </g>
             );

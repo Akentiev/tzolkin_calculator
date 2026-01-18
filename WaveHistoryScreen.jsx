@@ -1,4 +1,4 @@
-const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen }) => {
+const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setShowWaveHistory, setCurrentWaveOffset, setCurrentScreen, userProfile }) => {
   const [view, setView] = useState('current');
   const currentDate = selectedDate || new Date().toISOString().split('T')[0];
 
@@ -12,6 +12,34 @@ const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setS
   };
 
   const accent = accentColor || '#F3F4F6';
+
+  // Расчет личного дня (1-9) от даты рождения
+  const calculatePersonalDay = (dateStr) => {
+    if (!userProfile || !userProfile.birthDate) return null;
+
+    const date = new Date(dateStr + 'T00:00:00');
+    const birthDate = new Date(userProfile.birthDate + 'T00:00:00');
+
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const birthDay = birthDate.getDate();
+    const birthMonth = birthDate.getMonth() + 1;
+
+    const sumDigits = (n) => {
+      return n.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+    };
+
+    // Сумма дня и месяца текущей даты + число сознания
+    const dateSum = sumDigits(day) + sumDigits(month);
+    const consciousness = userProfile.syucai?.consciousness || sumDigits(birthDay);
+
+    let personalDay = dateSum + consciousness;
+    while (personalDay > 9) {
+      personalDay = sumDigits(personalDay);
+    }
+
+    return personalDay;
+  };
 
   // Получить список всех волн
   const getWaves = () => {
@@ -54,7 +82,8 @@ const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setS
             date: dateStr,
             data: waveData[dateStr] || null,
             tone: kinData.tone,
-            seal: kinData.seal
+            seal: kinData.seal,
+            personalDay: calculatePersonalDay(dateStr)
           });
         }
 
@@ -174,6 +203,20 @@ const WaveHistoryScreen = ({ waveData, selectedDate, todayKin, accentColor, setS
                       Пик
                     </div>
                     <div className="mt-1 text-white font-semibold">День {peakDay + 1}</div>
+                  </div>
+                )}
+
+                {userProfile && userProfile.birthDate && wave.days[0].personalDay && (
+                  <div className="col-span-2 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3 text-white/80">
+                    <div className="inline-flex items-center gap-2 text-amber-400/80">
+                      {window.LucideReact?.Hash ? (
+                        <window.LucideReact.Hash size={16} strokeWidth={1.5} />
+                      ) : null}
+                      Личные дни (Сюцай)
+                    </div>
+                    <div className="mt-1 text-amber-300 font-semibold text-xs">
+                      {wave.days.map((d, idx) => d.personalDay).filter(p => p).join(' • ')}
+                    </div>
                   </div>
                 )}
               </div>

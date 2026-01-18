@@ -379,7 +379,8 @@ const TzolkinTracker = () => {
             seal: seals[todayKin.seal].name,
             energy: energyNumber,
             ...todayAnswers
-          }
+          },
+          userProfile: userProfile
         })
       });
 
@@ -504,6 +505,7 @@ const TzolkinTracker = () => {
           setShowWaveHistory={() => { }}
           setCurrentWaveOffset={setCurrentWaveOffset}
           setCurrentScreen={setCurrentScreen}
+          userProfile={userProfile}
         />;
       case 'profile':
         return <ProfileScreen
