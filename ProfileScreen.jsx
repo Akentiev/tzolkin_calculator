@@ -6,6 +6,7 @@ const ProfileScreen = ({ userProfile, setUserProfile, seals, tones, accentColor 
     const [birthDate, setBirthDate] = useState(userProfile.birthDate || '');
     const [aiPortrait, setAiPortrait] = useState(userProfile.aiPortrait || '');
     const [loadingPortrait, setLoadingPortrait] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
     const hexToRgba = (hex, a) => {
         const h = String(hex || '').replace('#', '');
@@ -86,7 +87,7 @@ const ProfileScreen = ({ userProfile, setUserProfile, seals, tones, accentColor 
     };
 
     // Сохранение профиля
-    const saveProfile = () => {
+    const saveProfile = async () => {
         if (!name || !birthDate) {
             alert('Введите имя и дату рождения');
             return;
@@ -101,7 +102,19 @@ const ProfileScreen = ({ userProfile, setUserProfile, seals, tones, accentColor 
         };
 
         setUserProfile(profile);
+
+        // Сохраняем в localStorage для офлайн-доступа
         localStorage.setItem('userProfile', JSON.stringify(profile));
+
+        // Сохраняем в Supabase через глобальную функцию
+        const userId = typeof getUserId === 'function' ? getUserId() : localStorage.getItem('user_id');
+        if (typeof saveProfileToSupabase === 'function') {
+            const saved = await saveProfileToSupabase(userId, profile);
+            if (!saved) {
+                console.log('Профиль сохранен локально, синхронизация с сервером будет позже');
+            }
+        }
+
         setIsEditing(false);
         window.tgHapticLight?.();
 
@@ -131,8 +144,29 @@ const ProfileScreen = ({ userProfile, setUserProfile, seals, tones, accentColor 
             <div className="min-h-screen text-white px-4 pt-4 pb-32 fade-in">
                 {/* Header */}
                 <div className="max-w-2xl mx-auto mb-6">
-                    <div className="text-2xl font-bold tracking-wide text-white">Ваш Профиль</div>
-                    <div className="mt-1.5 text-sm text-white/50 font-light">Tzolk'in + Сюцай портрет</div>
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <div className="text-2xl font-bold tracking-wide text-white">Ваш Профиль</div>
+                            <div className="mt-1.5 text-sm text-white/50 font-light">Tzolk'in + Сюцай портрет</div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                window.tgHapticLight?.();
+                                setShowInfo(true);
+                            }}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl glass-card text-cyan-400/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                            style={{
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                            }}
+                            title="О профиле"
+                        >
+                            {window.LucideReact?.Info ? (
+                                <window.LucideReact.Info size={20} strokeWidth={2} />
+                            ) : (
+                                <span>ℹ️</span>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Форма редактирования */}
@@ -188,6 +222,87 @@ const ProfileScreen = ({ userProfile, setUserProfile, seals, tones, accentColor 
                         </button>
                     </div>
                 </div>
+
+                {/* Информационное модальное окно */}
+                {showInfo && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
+                        style={{
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            backdropFilter: 'blur(8px)'
+                        }}
+                        onClick={() => setShowInfo(false)}
+                    >
+                        <div
+                            className="max-w-lg w-full rounded-3xl glass-card-strong p-6 max-h-[80vh] overflow-y-auto"
+                            style={{
+                                borderColor: 'rgba(34, 211, 238, 0.3)',
+                                background: 'linear-gradient(135deg, rgba(6, 10, 18, 0.95), rgba(6, 12, 22, 0.92))',
+                                boxShadow: '0 0 40px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-xl font-bold text-white">О вашем профиле</div>
+                                <button
+                                    onClick={() => {
+                                        window.tgHapticLight?.();
+                                        setShowInfo(false);
+                                    }}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl glass-card text-white/70 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                                >
+                                    {window.LucideReact?.X ? (
+                                        <window.LucideReact.X size={18} strokeWidth={2} />
+                                    ) : (
+                                        <span>✕</span>
+                                    )}
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 text-sm text-white/80 leading-relaxed">
+                                <div>
+                                    <div className="flex items-center gap-2 font-semibold text-cyan-400 mb-2">
+                                        {window.LucideReact?.Layers ? (
+                                            <window.LucideReact.Layers size={18} strokeWidth={2} />
+                                        ) : null}
+                                        Двойная система анализа
+                                    </div>
+                                    <p>Профиль объединяет <strong>Tzolk'in</strong> (майянский календарь) и <strong>Сюцай</strong> (китайскую нумерологию) для глубокого понимания вашей личности.</p>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 font-semibold text-amber-400 mb-2">
+                                        {window.LucideReact?.Calendar ? (
+                                            <window.LucideReact.Calendar size={18} strokeWidth={2} />
+                                        ) : null}
+                                        Зачем вводить дату рождения?
+                                    </div>
+                                    <p>Ваша дата рождения определяет:</p>
+                                    <ul className="list-disc list-inside mt-2 space-y-1 text-white/70">
+                                        <li><strong>Кин рождения</strong> — вашу базовую энергетическую подпись (из 260 дней цикла)</li>
+                                        <li><strong>Число Сознания</strong> — ключ к самопознанию (1-9)</li>
+                                        <li><strong>Число Миссии</strong> — ваше жизненное предназначение (1-9)</li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 font-semibold text-purple-400 mb-2">
+                                        {window.LucideReact?.Bot ? (
+                                            <window.LucideReact.Bot size={18} strokeWidth={2} />
+                                        ) : null}
+                                        ИИ-персонализация
+                                    </div>
+                                    <p>После заполнения профиля <strong>ИИ-советы</strong> станут <em>персонализированными</em>:</p>
+                                    <ul className="list-disc list-inside mt-2 space-y-1 text-white/70">
+                                        <li>Анализ резонанса между вашим Кином и текущим днём</li>
+                                        <li>Связь вашей Миссии с фазами волны</li>
+                                        <li>Учёт личных дней по Сюцай (рассчитываются автоматически)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -206,21 +321,121 @@ const ProfileScreen = ({ userProfile, setUserProfile, seals, tones, accentColor 
                             {birthDate ? new Date(birthDate + 'T00:00:00').toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Добавьте дату рождения'}
                         </div>
                     </div>
-                    <button
-                        onClick={() => {
-                            window.tgHapticLight?.();
-                            setIsEditing(true);
-                        }}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-2xl glass-card text-cyan-400/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
-                        style={{
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-                        }}
-                        title="Редактировать"
-                    >
-                        {Edit2 ? <Edit2 size={20} strokeWidth={2} /> : <span>✏️</span>}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => {
+                                window.tgHapticLight?.();
+                                setShowInfo(true);
+                            }}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl glass-card text-cyan-400/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                            style={{
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                            }}
+                            title="О профиле"
+                        >
+                            {window.LucideReact?.Info ? (
+                                <window.LucideReact.Info size={20} strokeWidth={2} />
+                            ) : (
+                                <span>ℹ️</span>
+                            )}
+                        </button>
+                        <button
+                            onClick={() => {
+                                window.tgHapticLight?.();
+                                setIsEditing(true);
+                            }}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl glass-card text-cyan-400/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                            style={{
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                            }}
+                            title="Редактировать"
+                        >
+                            {Edit2 ? <Edit2 size={20} strokeWidth={2} /> : <span>✏️</span>}
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* Информационное модальное окно */}
+            {showInfo && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
+                    style={{
+                        background: 'rgba(0, 0, 0, 0.75)',
+                        backdropFilter: 'blur(8px)'
+                    }}
+                    onClick={() => setShowInfo(false)}
+                >
+                    <div
+                        className="max-w-lg w-full rounded-3xl glass-card-strong p-6 max-h-[80vh] overflow-y-auto"
+                        style={{
+                            borderColor: 'rgba(34, 211, 238, 0.3)',
+                            background: 'linear-gradient(135deg, rgba(6, 10, 18, 0.95), rgba(6, 12, 22, 0.92))',
+                            boxShadow: '0 0 40px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="text-xl font-bold text-white">О вашем профиле</div>
+                            <button
+                                onClick={() => {
+                                    window.tgHapticLight?.();
+                                    setShowInfo(false);
+                                }}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl glass-card text-white/70 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                            >
+                                {window.LucideReact?.X ? (
+                                    <window.LucideReact.X size={18} strokeWidth={2} />
+                                ) : (
+                                    <span>✕</span>
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 text-sm text-white/80 leading-relaxed">
+                            <div>
+                                <div className="flex items-center gap-2 font-semibold text-cyan-400 mb-2">
+                                    {window.LucideReact?.Layers ? (
+                                        <window.LucideReact.Layers size={18} strokeWidth={2} />
+                                    ) : null}
+                                    Двойная система анализа
+                                </div>
+                                <p>Профиль объединяет <strong>Tzolk'in</strong> (майянский календарь) и <strong>Сюцай</strong> (китайскую нумерологию) для глубокого понимания вашей личности.</p>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center gap-2 font-semibold text-amber-400 mb-2">
+                                    {window.LucideReact?.Calendar ? (
+                                        <window.LucideReact.Calendar size={18} strokeWidth={2} />
+                                    ) : null}
+                                    Зачем вводить дату рождения?
+                                </div>
+                                <p>Ваша дата рождения определяет:</p>
+                                <ul className="list-disc list-inside mt-2 space-y-1 text-white/70">
+                                    <li><strong>Кин рождения</strong> — вашу базовую энергетическую подпись (из 260 дней цикла)</li>
+                                    <li><strong>Число Сознания</strong> — ключ к самопознанию (1-9)</li>
+                                    <li><strong>Число Миссии</strong> — ваше жизненное предназначение (1-9)</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center gap-2 font-semibold text-purple-400 mb-2">
+                                    {window.LucideReact?.Bot ? (
+                                        <window.LucideReact.Bot size={18} strokeWidth={2} />
+                                    ) : null}
+                                    ИИ-персонализация
+                                </div>
+                                <p>После заполнения профиля <strong>ИИ-советы</strong> станут <em>персонализированными</em>:</p>
+                                <ul className="list-disc list-inside mt-2 space-y-1 text-white/70">
+                                    <li>Анализ резонанса между вашим Кином и текущим днём</li>
+                                    <li>Связь вашей Миссии с фазами волны</li>
+                                    <li>Учёт личных дней по Сюцай (рассчитываются автоматически)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Центральная печать Цолькин */}
             {tzolkinBirth && seal && tone && (

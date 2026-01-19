@@ -24,6 +24,62 @@ const getUserId = () => {
   return id;
 };
 
+// Загрузка профиля из Supabase
+const loadProfileFromSupabase = async (userId) => {
+  try {
+    const { data, error } = await supabaseClient
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Профиль не найден - это нормально для нового пользователя
+        return null;
+      }
+      throw error;
+    }
+
+    return data;
+  } catch (e) {
+    console.error('Ошибка загрузки профиля:', e);
+    return null;
+  }
+};
+
+// Сохранение профиля в Supabase
+const saveProfileToSupabase = async (userId, profile) => {
+  try {
+    const profileData = {
+      user_id: userId,
+      name: profile.name || '',
+      birth_date: profile.birthDate || null,
+      tzolkin_kin: profile.tzolkinBirth?.kin || null,
+      tzolkin_tone: profile.tzolkinBirth?.tone || null,
+      tzolkin_seal: profile.tzolkinBirth?.seal || null,
+      syucai_consciousness: profile.syucai?.consciousness || null,
+      syucai_mission: profile.syucai?.mission || null,
+      ai_portrait: profile.aiPortrait || null,
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabaseClient
+      .from('profiles')
+      .upsert(profileData, { onConflict: 'user_id' });
+
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error('Ошибка сохранения профиля:', e);
+    return false;
+  }
+};
+
+// Экспортируем в глобальную область для использования в других компонентах
+window.getUserId = getUserId;
+window.saveProfileToSupabase = saveProfileToSupabase;
+
 const pad2 = (n) => String(n).padStart(2, '0');
 const formatDateLocal = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
@@ -135,14 +191,60 @@ const TzolkinTracker = () => {
   const [loadingDay, setLoadingDay] = useState(false);
   const [loadingWave, setLoadingWave] = useState(false);
   const [savingDay, setSavingDay] = useState(false);
-  const [userProfile, setUserProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('userProfile');
-      return saved ? JSON.parse(saved) : { name: '', birthDate: '', tzolkinBirth: null, syucai: null, aiPortrait: '' };
-    } catch (_) {
-      return { name: '', birthDate: '', tzolkinBirth: null, syucai: null, aiPortrait: '' };
-    }
+  const [userProfile, setUserProfile] = useState({
+    name: '',
+    birthDate: '',
+    tzolkinBirth: null,
+    syucai: null,
+    aiPortrait: ''
   });
+
+  // Загрузка профиля при монтировании компонента
+  useEffect(() => {
+    const loadProfile = async () => {
+      const userId = getUserId();
+
+      // Сначала пробуем загрузить из Supabase
+      const supabaseProfile = await loadProfileFromSupabase(userId);
+
+      if (supabaseProfile) {
+        const profile = {
+          name: supabaseProfile.name || '',
+          birthDate: supabaseProfile.birth_date || '',
+          tzolkinBirth: supabaseProfile.tzolkin_kin ? {
+            kin: supabaseProfile.tzolkin_kin,
+            tone: supabaseProfile.tzolkin_tone,
+            seal: supabaseProfile.tzolkin_seal
+          } : null,
+          syucai: supabaseProfile.syucai_consciousness ? {
+            consciousness: supabaseProfile.syucai_consciousness,
+            mission: supabaseProfile.syucai_mission
+          } : null,
+          aiPortrait: supabaseProfile.ai_portrait || ''
+        };
+        setUserProfile(profile);
+        // Сохраняем в localStorage для офлайн-доступа
+        localStorage.setItem('userProfile', JSON.stringify(profile));
+      } else {
+        // Если в Supabase нет, пробуем загрузить из localStorage
+        try {
+          const saved = localStorage.getItem('userProfile');
+          if (saved) {
+            const profile = JSON.parse(saved);
+            setUserProfile(profile);
+            // Синхронизируем с Supabase
+            if (profile.birthDate) {
+              await saveProfileToSupabase(userId, profile);
+            }
+          }
+        } catch (e) {
+          console.error('Ошибка загрузки из localStorage:', e);
+        }
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   // Маппинг энергии: строка -> число 1-5
   const energyToNumber = (energyLabel) => {

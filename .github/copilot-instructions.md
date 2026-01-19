@@ -92,7 +92,9 @@ Pattern in: [HomeScreen.jsx](../HomeScreen.jsx#L21-L52), [WaveHistory.jsx](../Wa
 
 ### 7. Supabase Data Layer
 
-**Single table**: `user_days`
+**Two tables**:
+
+1. **`user_days`** - Daily tracking data
 
 Schema:
 ```
@@ -108,7 +110,27 @@ ai_events (json) - Array of strings
 
 **Upsert pattern**: Always use `{ onConflict: 'user_id,date' }` when saving.
 
-**User Profile**: Stored in `localStorage` as `userProfile` key:
+2. **`profiles`** - User profile data
+
+Schema:
+```
+user_id (string) - PRIMARY KEY, generated in localStorage
+name (string) - User name
+birth_date (date) - Birth date in YYYY-MM-DD format
+tzolkin_kin, tzolkin_tone, tzolkin_seal (integer) - Tzolkin birth data
+syucai_consciousness, syucai_mission (integer 1-9) - Syucai numbers
+ai_portrait (text) - AI-generated personality description
+updated_at (timestamp) - Last update timestamp
+```
+
+**Upsert pattern**: Use `{ onConflict: 'user_id' }` when saving profile.
+
+**Profile sync workflow**:
+1. On app load: Try Supabase first, fallback to localStorage
+2. On profile save: Update both localStorage (offline) and Supabase (sync)
+3. Global functions: `window.getUserId()`, `window.saveProfileToSupabase(userId, profile)`
+
+**User Profile**: Also stored in `localStorage` as `userProfile` key for offline access:
 ```js
 { name, birthDate, tzolkinBirth, syucai, aiPortrait }
 ```
@@ -169,5 +191,5 @@ const { Calendar, ChevronDown } = window.LucideReact || {};
 - Tzolkin math: [App.jsx](../App.jsx#L90-L115)
 - Daily tracking UI: [HomeScreen.jsx](../HomeScreen.jsx)
 - Wave visualization: [CurrentWave.jsx](../CurrentWave.jsx), [WaveHistory.jsx](../WaveHistory.jsx)
-- Profile & Syucai: [ProfileScreen.jsx](../ProfileScreen.jsx)
+- Profile & Syucai: [ProfileScreen.jsx](../ProfileScreen.jsx) - includes Info modal explaining Tzolkin+Syucai system and AI personalization benefits
 - AI endpoints: [api/analyze-day.js](../api/analyze-day.js), [api/analyze-wave.js](../api/analyze-wave.js), [api/analyze-profile.js](../api/analyze-profile.js)

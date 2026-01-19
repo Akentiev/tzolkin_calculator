@@ -2,6 +2,7 @@ const { useState } = React;
 
 const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData, todayAnswers, setTodayAnswers, saveAnswers, analyzeDayWithClaude, dayAdvice, loadingDay, savingDay, setCurrentScreen }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [showNotesInfo, setShowNotesInfo] = useState(false);
   const seal = seals[todayKin.seal];
   const tone = tones[todayKin.tone - 1];
 
@@ -266,7 +267,27 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
         ))}
 
         <div className="mt-6">
-          <div className="text-sm text-white/70 mb-3 font-medium">Заметки (необязательно)</div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-sm text-white/70 font-medium">Заметки</div>
+            <button
+              onClick={() => {
+                window.tgHapticLight?.();
+                setShowNotesInfo(true);
+              }}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-xl glass-card text-cyan-400/80 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+              style={{
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+              }}
+              title="О заметках"
+              type="button"
+            >
+              {window.LucideReact?.Info ? (
+                <window.LucideReact.Info size={16} strokeWidth={2} />
+              ) : (
+                <span>ℹ️</span>
+              )}
+            </button>
+          </div>
           <textarea
             value={todayAnswers.notes}
             onChange={(e) => setTodayAnswers({ ...todayAnswers, notes: e.target.value })}
@@ -277,6 +298,81 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
             rows="3"
             placeholder="Ключевые события дня..."
           />
+
+          {/* Модальное окно о заметках */}
+          {showNotesInfo && (
+            <div 
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
+              style={{
+                background: 'rgba(0, 0, 0, 0.75)',
+                backdropFilter: 'blur(8px)'
+              }}
+              onClick={() => setShowNotesInfo(false)}
+            >
+              <div 
+                className="max-w-md w-full rounded-3xl glass-card-strong p-6"
+                style={{
+                  borderColor: 'rgba(34, 211, 238, 0.3)',
+                  background: 'linear-gradient(135deg, rgba(6, 10, 18, 0.95), rgba(6, 12, 22, 0.92))',
+                  boxShadow: '0 0 40px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-lg font-bold text-white">О заметках</div>
+                  <button
+                    onClick={() => {
+                      window.tgHapticLight?.();
+                      setShowNotesInfo(false);
+                    }}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl glass-card text-white/70 transition-all duration-300 hover:bg-white/10 active:scale-[0.95]"
+                  >
+                    {window.LucideReact?.X ? (
+                      <window.LucideReact.X size={16} strokeWidth={2} />
+                    ) : (
+                      <span>✕</span>
+                    )}
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-sm text-white/80 leading-relaxed">
+                  <div>
+                    <div className="flex items-center gap-2 font-semibold text-cyan-400 mb-2">
+                      {window.LucideReact?.BookOpen ? (
+                        <window.LucideReact.BookOpen size={16} strokeWidth={2} />
+                      ) : null}
+                      Дневник записей
+                    </div>
+                    <p className="text-white/70">Ваши заметки формируют <strong>личный дневник</strong>, где вы можете отслеживать ключевые события и рефлексии каждого дня.</p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 font-semibold text-purple-400 mb-2">
+                      {window.LucideReact?.Waves ? (
+                        <window.LucideReact.Waves size={16} strokeWidth={2} />
+                      ) : null}
+                      Дневник волн
+                    </div>
+                    <p className="text-white/70">Записи сохраняются в <strong>дневнике волн</strong>, что позволяет видеть динамику 13-дневных циклов и обнаруживать паттерны.</p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 font-semibold text-amber-400 mb-2">
+                      {window.LucideReact?.Bot ? (
+                        <window.LucideReact.Bot size={16} strokeWidth={2} />
+                      ) : null}
+                      ИИ-рекомендации
+                    </div>
+                    <p className="text-white/70">На основе ваших заметок ИИ создаёт <strong>персональные рекомендации</strong>, учитывая контекст вашей жизни и энергетику дня.</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-3 mt-3">
+                    <p className="text-white/70 text-xs">💡 Чем подробнее заметка, тем точнее анализ ИИ и полезнее рекомендации.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <button
