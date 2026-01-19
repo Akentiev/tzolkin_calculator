@@ -1,10 +1,10 @@
 export default async function handler(req, res) {
   try {
     const { message } = req.body || {};
-    
+
     if (message?.text === '/start') {
       const chatId = message.chat.id;
-      
+
       const welcomeMessage = `🌀 *Tzolkin Tracker*
 
 *Ваш личный трекер энергетических циклов*
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
 Через 13 дней вы увидите свой ритм\\.
 
 👇 Жми "Открыть Трекер"`;
-      
+
       await fetch(`https://api.telegram.org/bot8140786228:AAEVndmITKCv7GtosJIa4KNYr1wyYETQ8co/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,9 +82,9 @@ export default async function handler(req, res) {
         })
       });
     }
-    
+
     return res.status(200).json({ ok: true });
-    
+
   } catch (error) {
     console.error('Error:', error);
     return res.status(200).json({ ok: false, error: error.message });
