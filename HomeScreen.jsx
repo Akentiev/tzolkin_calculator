@@ -335,15 +335,20 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
                   </button>
                 </div>
 
-                <div className="space-y-3 text-sm text-white/80 leading-relaxed">
+                <div className="space-y-4 text-sm text-white/80 leading-relaxed">
                   <div>
                     <div className="flex items-center gap-2 font-semibold text-cyan-400 mb-2">
-                      {window.LucideReact?.BookOpen ? (
-                        <window.LucideReact.BookOpen size={16} strokeWidth={2} />
+                      {window.LucideReact?.ListChecks ? (
+                        <window.LucideReact.ListChecks size={16} strokeWidth={2} />
                       ) : null}
-                      Дневник записей
+                      Как использовать трекер
                     </div>
-                    <p className="text-white/70">Ваши заметки формируют <strong>личный дневник</strong>, где вы можете отслеживать ключевые события и рефлексии каждого дня.</p>
+                    <ol className="list-decimal list-inside space-y-1.5 text-white/70 ml-1">
+                      <li><strong>Отвечайте на 5 вопросов</strong> — оценка энергии, резонанса, действий, проекта и событий дня</li>
+                      <li><strong>Пишите заметки</strong> — ключевые события, мысли, инсайты (это основа для анализа ИИ)</li>
+                      <li><strong>Сохраняйте день</strong> — данные автоматически структурируются и добавляются в дневник волн</li>
+                      <li><strong>Запрашивайте ИИ-совет</strong> — персональные рекомендации на основе вашего Кина и заметок</li>
+                    </ol>
                   </div>
 
                   <div>
@@ -351,23 +356,24 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
                       {window.LucideReact?.Waves ? (
                         <window.LucideReact.Waves size={16} strokeWidth={2} />
                       ) : null}
-                      Дневник волн
+                      Через 13 дней
                     </div>
-                    <p className="text-white/70">Записи сохраняются в <strong>дневнике волн</strong>, что позволяет видеть динамику 13-дневных циклов и обнаруживать паттерны.</p>
+                    <p className="text-white/70">После заполнения полной волны (13 дней) вы увидите:</p>
+                    <ul className="list-disc list-inside mt-1.5 space-y-1 text-white/70 ml-1">
+                      <li>График энергии с пиками и спадами</li>
+                      <li>Паттерны вашего поведения и состояний</li>
+                      <li>Связь тонов с вашими проектами</li>
+                      <li>Анализ волны от ИИ с рекомендациями</li>
+                    </ul>
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-2 font-semibold text-amber-400 mb-2">
-                      {window.LucideReact?.Bot ? (
-                        <window.LucideReact.Bot size={16} strokeWidth={2} />
+                  <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-3">
+                    <div className="flex items-start gap-2">
+                      {window.LucideReact?.Lightbulb ? (
+                        <window.LucideReact.Lightbulb size={16} strokeWidth={2} className="text-amber-400 mt-0.5 shrink-0" />
                       ) : null}
-                      ИИ-рекомендации
+                      <p className="text-white/70 text-xs"><strong>Совет:</strong> Заполняйте трекер в конце дня, когда можете честно оценить свою энергию и события. Детальные заметки = более точные инсайты от ИИ.</p>
                     </div>
-                    <p className="text-white/70">На основе ваших заметок ИИ создаёт <strong>персональные рекомендации</strong>, учитывая контекст вашей жизни и энергетику дня.</p>
-                  </div>
-
-                  <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-3 mt-3">
-                    <p className="text-white/70 text-xs">💡 Чем подробнее заметка, тем точнее анализ ИИ и полезнее рекомендации.</p>
                   </div>
                 </div>
               </div>
