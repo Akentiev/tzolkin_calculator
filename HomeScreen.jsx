@@ -301,7 +301,7 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
 
           {/* Модальное окно о заметках */}
           {showNotesInfo && (
-            <div 
+            <div
               className="fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
               style={{
                 background: 'rgba(0, 0, 0, 0.75)',
@@ -309,7 +309,7 @@ const HomeScreen = ({ selectedDate, todayKin, seals, tones, questions, waveData,
               }}
               onClick={() => setShowNotesInfo(false)}
             >
-              <div 
+              <div
                 className="max-w-md w-full rounded-3xl glass-card-strong p-6"
                 style={{
                   borderColor: 'rgba(34, 211, 238, 0.3)',
